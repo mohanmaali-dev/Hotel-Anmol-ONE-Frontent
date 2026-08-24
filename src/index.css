@@ -1,0 +1,79 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #c45a35;
+  --color-primary-dark: #8f351f;
+  --color-primary-light: #fff0e8;
+  --color-cream: #f5f6f8;
+  --color-ink: #34201a;
+}
+
+html {
+  font-family: Inter, system-ui, sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #f5f6f8;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Shared content width for every authenticated application page. */
+@utility page-content {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 100rem;
+}
+
+@utility record-link {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  text-underline-offset: 4px;
+
+  &:hover {
+    text-decoration-line: underline;
+  }
+
+  &:focus-visible {
+    border-radius: 0.25rem;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  body {
+    background: white;
+  }
+
+  .print-shell {
+    padding-left: 0 !important;
+  }
+
+  .print-area {
+    padding: 0 !important;
+  }
+
+  .print-card {
+    break-inside: avoid;
+    border-color: #e2e8f0;
+    box-shadow: none;
+  }
+}
