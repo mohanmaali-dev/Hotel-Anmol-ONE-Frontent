@@ -18,11 +18,12 @@ function MenuItemTable({ items, categories, onToggleAvailability, onDelete, tota
         <div className="grid place-items-center px-6 py-14"><span className="size-9 animate-spin rounded-full border-4 border-primary-light border-t-primary" /><p className="mt-3 text-sm text-slate-500">Loading menu items...</p></div>
       ) : items.length ? (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[850px] text-left">
+          <table className="w-full min-w-[980px] text-left">
             <thead>
               <tr className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <th className="px-5 py-3">Item Name</th>
                 <th className="px-4 py-3">Category</th>
+                <th className="px-4 py-3">Serving Size</th>
                 <th className="px-4 py-3 text-right">Selling Price</th>
                 <th className="px-4 py-3">Availability</th>
                 <th className="px-4 py-3">Stock Tracking</th>
@@ -41,6 +42,7 @@ function MenuItemTable({ items, categories, onToggleAvailability, onDelete, tota
                       </Link>
                     </td>
                     <td className="whitespace-nowrap px-4 py-4">{category?.name || 'Uncategorized'}</td>
+                    <td className="whitespace-nowrap px-4 py-4">{item.servingSize || '—'}</td>
                     <td className="px-4 py-4 text-right font-bold text-slate-800">
                       {formatCurrency(item.sellingPrice)}
                     </td>

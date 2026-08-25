@@ -20,6 +20,7 @@ function MenuItemForm({ initialItem, categories, stockItems, onSave, submitting 
     name: initialItem?.name || '',
     categoryId: initialItem?.categoryId || categories.find((category) => category.isActive)?.id || '',
     sellingPrice: initialItem?.sellingPrice || 0,
+    servingSize: initialItem?.servingSize || '',
     description: initialItem?.description || '',
     isAvailable: initialItem?.isAvailable ?? true,
     trackStock: initialItem?.trackStock ?? false,
@@ -86,6 +87,7 @@ function MenuItemForm({ initialItem, categories, stockItems, onSave, submitting 
       ...initialItem,
       ...form,
       name: form.name.trim(),
+      servingSize: form.servingSize.trim(),
       sellingPrice: Number(form.sellingPrice),
       ingredients: selectedIngredients.map(
         ({ stockItemId, stockItemName, quantityUsed, unit }) => ({
@@ -114,7 +116,7 @@ function MenuItemForm({ initialItem, categories, stockItems, onSave, submitting 
         <h2 className="font-bold text-slate-900">Menu Item Information</h2>
         <p className="mt-0.5 text-xs text-slate-500">Basic item, pricing, and availability details</p>
 
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">Item Name</span>
             <input type="text" value={form.name} onChange={(event) => updateForm('name', event.target.value)} placeholder="Enter menu item name" className={inputClass} />
@@ -135,7 +137,14 @@ function MenuItemForm({ initialItem, categories, stockItems, onSave, submitting 
             <input type="number" min="0" value={form.sellingPrice} onChange={(event) => updateForm('sellingPrice', event.target.value)} className={inputClass} />
             <p className="mt-1 text-xs text-slate-400">Independent from ingredient purchase prices.</p>
           </label>
-          <label className="sm:col-span-2 xl:col-span-3">
+          <label>
+            <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+              Serving Size <span className="font-normal text-slate-400">(optional)</span>
+            </span>
+            <input type="text" maxLength="80" value={form.servingSize} onChange={(event) => updateForm('servingSize', event.target.value)} placeholder="Example: 1 Plate or 250 ml" className={inputClass} />
+            <p className="mt-1 text-xs text-slate-400">Shown on orders and bills.</p>
+          </label>
+          <label className="sm:col-span-2 xl:col-span-4">
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">
               Description <span className="font-normal text-slate-400">(optional)</span>
             </span>

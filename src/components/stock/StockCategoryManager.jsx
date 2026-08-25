@@ -126,7 +126,7 @@ function StockCategoryManager({ open, categories, canCreate, canEdit, canDelete,
         </div>
       </section>
 
-      <ConfirmDeleteModal open={Boolean(pendingDelete)} title={`Delete ${pendingDelete?.name || 'category'}?`} message="This category will be permanently removed. Categories already used by stock items cannot be deleted; make them inactive instead." confirmLabel="Delete Category" loading={working} onConfirm={handleDelete} onClose={() => setPendingDelete(null)} />
+      <ConfirmDeleteModal open={Boolean(pendingDelete)} title={`Delete ${pendingDelete?.name || 'category'}?`} message="This stock category will be permanently removed." dependencyType="stock-category" recordId={pendingDelete?.id} confirmLabel="Delete Category" loading={working} onConfirm={handleDelete} onClose={() => setPendingDelete(null)} />
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { FiArrowLeft, FiTag } from 'react-icons/fi'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
-import { createMenuItem, getMenuCategories, getMenuItem, updateMenuItem } from '../../api/menuApi.js'
+import { createMenuItem, getAllMenuCategories, getMenuItem, updateMenuItem } from '../../api/menuApi.js'
 import { getStockItems } from '../../api/stockApi.js'
 import MenuItemForm from '../../components/menu/MenuItemForm.jsx'
 
@@ -19,10 +19,10 @@ function NewMenuItem() {
 
   useEffect(() => {
     let active = true
-    const requests = [getMenuCategories(), getStockItems({ page: 1, limit: 100 })]
+    const requests = [getAllMenuCategories(), getStockItems({ page: 1, limit: 100 })]
     if (editId) requests.push(getMenuItem(editId))
     Promise.all(requests)
-      .then(([categoryResult, stockResult, itemResult]) => { if (!active) return; setCategories(categoryResult.data); setStockItems(stockResult.data); if (itemResult) setInitialItem(itemResult.data) })
+      .then(([categoryResult, stockResult, itemResult]) => { if (!active) return; setCategories(categoryResult); setStockItems(stockResult.data); if (itemResult) setInitialItem(itemResult.data) })
       .catch((requestError) => { if (active) setError(requestError.message) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }

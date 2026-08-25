@@ -27,7 +27,8 @@ function ExcelManagement() {
       failed: backendResult.failed + invalidRows,
       errors: [...preview.errors, ...backendResult.errors],
     }
-    setNotice({ type: result.failed ? 'error' : 'success', text: `${type.title}: ${result.imported} imported, ${result.skipped} skipped, ${result.failed} failed.` })
+    const noticeType = result.failed === 0 ? 'success' : result.imported > 0 ? 'info' : 'error'
+    setNotice({ type: noticeType, text: `${type.title}: ${result.imported} imported, ${result.skipped} skipped, ${result.failed} need attention.` })
     return result
   }
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { FiArrowLeft, FiFilter, FiPlus, FiSearch, FiTag, FiX } from 'react-icons/fi'
 import { Link, useLocation } from 'react-router-dom'
 
-import { deleteMenuItem, getMenuCategories, getMenuItems, updateMenuItem } from '../../api/menuApi.js'
+import { deleteMenuItem, getAllMenuCategories, getMenuItems, updateMenuItem } from '../../api/menuApi.js'
 import ConfirmDeleteModal from '../../components/ConfirmDeleteModal.jsx'
 import Pagination from '../../components/Pagination.jsx'
 import Toast from '../../components/Toast.jsx'
@@ -27,7 +27,7 @@ function MenuItems() {
   const [pendingDelete, setPendingDelete] = useState(null)
   const [notice, setNotice] = useState(location.state?.message ? { type: 'success', text: location.state.message } : null)
 
-  useEffect(() => { getMenuCategories().then((result) => setCategories(result.data)).catch(() => {}) }, [])
+  useEffect(() => { getAllMenuCategories().then(setCategories).catch(() => {}) }, [])
 
   const loadItems = useCallback(async () => {
     setLoading(true)
@@ -66,7 +66,7 @@ function MenuItems() {
         <button type="button" onClick={() => { setPage(1); setFilters(emptyFilters) }} className="flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><FiX /> Clear</button>
       </div></section>
       <div className="space-y-5"><MenuItemTable items={items} categories={categories} loading={loading} total={pagination.total} canEdit={can('menu', 'edit')} canDelete={can('menu', 'delete')} onToggleAvailability={(id) => handleToggle(items.find((item) => item.id === id))} onDelete={setPendingDelete} />{!loading && <Pagination pagination={pagination} onPageChange={setPage} label="menu items" />}</div>
-      <ConfirmDeleteModal open={Boolean(pendingDelete)} title={`Delete ${pendingDelete?.name || 'menu item'}?`} message="This menu item and its recipe will be permanently removed. Deletion may be blocked if existing orders use this item." confirmLabel="Delete Menu Item" loading={deleting} onConfirm={handleDelete} onClose={() => setPendingDelete(null)} />
+      <ConfirmDeleteModal open={Boolean(pendingDelete)} title={`Delete ${pendingDelete?.name || 'menu item'}?`} message="This menu item and its recipe will be permanently removed." dependencyType="menu-item" recordId={pendingDelete?.id} confirmLabel="Delete Menu Item" loading={deleting} onConfirm={handleDelete} onClose={() => setPendingDelete(null)} />
     </div></main>
   )
 }

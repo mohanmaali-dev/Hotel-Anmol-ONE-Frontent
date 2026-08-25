@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
   FiArrowLeft,
-  FiCheckCircle,
   FiEdit2,
   FiPackage,
   FiShoppingCart,
@@ -201,8 +200,6 @@ function PurchaseDetails() {
           </div>
         </div>
 
-        {purchase.purchaseStatus === 'Received' && purchase.stockUpdated && <div className="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"><FiCheckCircle className="mt-0.5 shrink-0" /><div><p className="font-semibold">Stock Updated</p><p className="mt-0.5 text-xs text-emerald-700">Purchased items have been added to stock.</p></div></div>}
-
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40">
             <h3 className="font-bold text-slate-900">Supplier Details</h3>
@@ -295,6 +292,8 @@ function PurchaseDetails() {
             <PurchasePayment
               paymentType={paymentDraft.paymentType}
               paidAmount={paymentDraft.paidAmount}
+              savedPaymentType={purchase.paymentType || 'Cash'}
+              savedPaidAmount={purchase.paidAmount}
               finalAmount={purchase.finalAmount}
               onChange={(field, value) =>
                 setPaymentDraft((current) => ({ ...current, [field]: value }))
@@ -316,7 +315,7 @@ function PurchaseDetails() {
             <button type="button" disabled={updating} onClick={() => setConfirmDelete(true)} className="flex h-9 items-center gap-1.5 rounded-md border border-rose-300 bg-white px-3 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50"><FiTrash2 /> Delete Purchase</button>
           </DangerZone>
         )}
-        <ConfirmDeleteModal open={confirmDelete} title={`Delete purchase ${purchase.purchaseNo}?`} message="This draft or cancelled purchase will be permanently removed. This action cannot be undone." confirmLabel="Delete Purchase" loading={updating} onConfirm={handleDelete} onClose={() => setConfirmDelete(false)} />
+        <ConfirmDeleteModal open={confirmDelete} title={`Delete purchase ${purchase.purchaseNo}?`} message="This purchase will be permanently removed. This action cannot be undone." dependencyType="purchase" recordId={purchase.id} confirmLabel="Delete Purchase" loading={updating} onConfirm={handleDelete} onClose={() => setConfirmDelete(false)} />
       </div>
     </main>
   )

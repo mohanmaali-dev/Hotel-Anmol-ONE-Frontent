@@ -97,7 +97,7 @@ function SaleDetails({ sale }) {
               <tbody className="divide-y divide-slate-100">
                 {sale.items.map((item, index) => (
                   <tr key={item.id || `${item.menuItemId}-${index}`} className="text-sm text-slate-600">
-                    <td className="px-5 py-4 font-semibold text-slate-800">{item.name}</td>
+                    <td className="px-5 py-4"><p className="font-semibold text-slate-800">{item.name}</p>{item.servingSize && <p className="mt-0.5 text-xs text-slate-500">{item.servingSize}</p>}</td>
                     <td className="px-4 py-4 text-center">{item.quantity}</td>
                     <td className="px-4 py-4 text-right">{formatCurrency(item.rate)}</td>
                     <td className="px-5 py-4 text-right font-semibold text-slate-800">

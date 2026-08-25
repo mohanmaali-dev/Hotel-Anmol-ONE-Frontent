@@ -20,6 +20,7 @@ export class ApiError extends Error {
     this.status = options.status
     this.errors = options.errors || []
     this.items = options.items || []
+    this.dependencies = options.dependencies || []
   }
 }
 
@@ -67,6 +68,7 @@ api.interceptors.response.use(
         status,
         errors: body?.errors,
         items: body?.items,
+        dependencies: body?.dependencies,
       }),
     )
   },

@@ -33,7 +33,7 @@ const validateRows = (typeId, records) => {
       requireNumber(record, 'Selling Price', row)
       if (!['available', 'unavailable'].includes(normalized(record.Availability))) errors.push({ row, message: 'Availability must be Available or Unavailable.' })
       if (!['yes', 'no', 'true', 'false'].includes(normalized(record['Track Stock']))) errors.push({ row, message: 'Track Stock must be Yes or No.' })
-      if (['yes', 'true'].includes(normalized(record['Track Stock']))) errors.push({ row, message: 'Stock-tracked menu items need recipe ingredients and must be created from the Menu form.' })
+      if (['yes', 'true'].includes(normalized(record['Track Stock']))) errors.push({ row, message: 'Change Track Stock to No for Excel import. Add its ingredients later from Menu Items.' })
     } else if (typeId === 'suppliers') {
       ;['Supplier Name', 'Contact Person', 'Phone', 'Address', 'Status'].forEach((column) => requireText(record, column, row))
       if (!['active', 'inactive'].includes(normalized(record.Status))) errors.push({ row, message: 'Status must be Active or Inactive.' })
@@ -57,7 +57,8 @@ export async function createFilePreview(file, type) {
     .filter((row) => row.some((value) => String(value).trim()))
   if (!grid.length) throw new Error('The selected file is empty.')
   const columns = grid[0].map((column) => String(column).trim())
-  const missing = type.columns.filter((required) => !columns.some((column) => normalized(column) === normalized(required)))
+  const optionalColumns = new Set(type.optionalColumns || [])
+  const missing = type.columns.filter((required) => !optionalColumns.has(required) && !columns.some((column) => normalized(column) === normalized(required)))
   if (missing.length) throw new Error(`Missing required columns: ${missing.join(', ')}`)
   const columnMap = Object.fromEntries(type.columns.map((required) => [required, columns.findIndex((column) => normalized(column) === normalized(required))]))
   const records = grid.slice(1).map((row) => Object.fromEntries(type.columns.map((column) => [column, row[columnMap[column]] ?? ''])))

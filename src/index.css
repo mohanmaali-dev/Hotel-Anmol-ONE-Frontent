@@ -56,7 +56,8 @@ button {
 
 @media print {
   @page {
-    margin: 14mm;
+    size: A4 portrait;
+    margin: 10mm;
   }
 
   body {
@@ -75,5 +76,22 @@ button {
     break-inside: avoid;
     border-color: #e2e8f0;
     box-shadow: none;
+  }
+
+  .print-bill {
+    width: 100%;
+    max-width: none;
+    font-family: Inter, Arial, sans-serif;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .print-table-header {
+    display: table-header-group;
+  }
+
+  .print-table-row,
+  .print-summary {
+    break-inside: avoid;
   }
 }
