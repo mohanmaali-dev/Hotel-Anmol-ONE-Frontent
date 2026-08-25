@@ -1,16 +1,15 @@
-import { FiCalendar, FiFilter, FiSearch, FiX } from 'react-icons/fi'
+import { FiSearch, FiX } from 'react-icons/fi'
+
+import DatePickerField from '../DatePickerField.jsx'
+import MobileFilterPanel from '../MobileFilterPanel.jsx'
 
 const inputClass =
   'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10'
 
 function OrderFilters({ filters, onChange, onClear }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
-        <FiFilter className="text-primary" /> Filters
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]">
+    <MobileFilterPanel filters={filters}>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-[2fr_1fr_1fr_1fr_1.2fr_auto]">
         <label className="relative">
           <span className="sr-only">Search by order number or customer</span>
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -67,16 +66,7 @@ function OrderFilters({ filters, onChange, onClear }) {
           </select>
         </label>
 
-        <label className="relative">
-          <span className="sr-only">Order date</span>
-          <FiCalendar className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="date"
-            value={filters.date}
-            onChange={(event) => onChange('date', event.target.value)}
-            className={`${inputClass} pl-9`}
-          />
-        </label>
+        <DatePickerField label="Date" value={filters.date} onChange={(value) => onChange('date', value)} />
 
         <button
           type="button"
@@ -86,7 +76,7 @@ function OrderFilters({ filters, onChange, onClear }) {
           <FiX /> Clear
         </button>
       </div>
-    </section>
+    </MobileFilterPanel>
   )
 }
 

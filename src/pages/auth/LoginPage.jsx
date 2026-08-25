@@ -3,6 +3,7 @@ import { FiX } from 'react-icons/fi'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 
 import AuthField from '../../components/AuthField.jsx'
+import BrandLogo from '../../components/BrandLogo.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 
 function LoginPage() {
@@ -32,11 +33,7 @@ function LoginPage() {
 
   return (
     <div>
-      <img
-        src="/logo.svg"
-        alt="DineDesk Restaurant Manager"
-        className="mb-8 h-14 w-auto max-w-full"
-      />
+      <BrandLogo large className="mb-8" />
       <h1 className="text-3xl font-bold">Welcome back</h1>
       <p className="mt-2 text-slate-500">Sign in to continue to your account.</p>
 

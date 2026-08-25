@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { FiChevronDown, FiDownload, FiPrinter, FiRefreshCw, FiSearch } from 'react-icons/fi'
 
+import DatePickerField from '../DatePickerField.jsx'
+import MobileFilterPanel from '../MobileFilterPanel.jsx'
+
 const inputClass = 'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10'
 
 const filterOptions = {
@@ -21,13 +24,13 @@ function ReportFilters({ activeReport, filters, onChange, onApply, onReset, onEx
   const visibleFilters = filterOptions[activeReport] || []
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm shadow-slate-200/40 print:hidden">
+    <MobileFilterPanel filters={filters} title="Report Filters" className="p-3 print:hidden">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-end">
         <div className="shrink-0 pb-1 xl:w-24"><h2 className="text-sm font-bold text-slate-800">2. Date</h2><p className="text-xs text-slate-400">Optional</p></div>
 
         <div className="grid flex-1 grid-cols-1 gap-2 sm:grid-cols-2 xl:max-w-xl">
-          <label className="flex h-10 overflow-hidden rounded-lg border border-slate-200 bg-white focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10"><span className="flex items-center border-r border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-500">From</span><input type="date" value={filters.fromDate} onChange={(event) => onChange('fromDate', event.target.value)} className="min-w-0 flex-1 bg-white px-3 text-sm text-slate-700 outline-none" /></label>
-          <label className="flex h-10 overflow-hidden rounded-lg border border-slate-200 bg-white focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10"><span className="flex items-center border-r border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-500">To</span><input type="date" value={filters.toDate} onChange={(event) => onChange('toDate', event.target.value)} className="min-w-0 flex-1 bg-white px-3 text-sm text-slate-700 outline-none" /></label>
+          <DatePickerField label="From" value={filters.fromDate} onChange={(value) => onChange('fromDate', value)} />
+          <DatePickerField label="To" value={filters.toDate} onChange={(value) => onChange('toDate', value)} />
         </div>
 
         <div className="flex flex-wrap items-center gap-2 xl:ml-auto">
@@ -58,7 +61,7 @@ function ReportFilters({ activeReport, filters, onChange, onApply, onReset, onEx
         </div>
       )}
 
-    </section>
+    </MobileFilterPanel>
   )
 }
 

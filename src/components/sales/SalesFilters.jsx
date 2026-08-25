@@ -1,15 +1,14 @@
-import { FiCalendar, FiFilter, FiSearch, FiX } from 'react-icons/fi'
+import { FiSearch, FiX } from 'react-icons/fi'
+
+import DatePickerField from '../DatePickerField.jsx'
+import MobileFilterPanel from '../MobileFilterPanel.jsx'
 
 const inputClass =
   'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10'
 
 function SalesFilters({ filters, onChange, onClear }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
-        <FiFilter className="text-primary" /> Filters
-      </div>
-
+    <MobileFilterPanel filters={filters}>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[2fr_repeat(5,1fr)_auto]">
         <label className="relative">
           <span className="sr-only">Search sales</span>
@@ -23,24 +22,9 @@ function SalesFilters({ filters, onChange, onClear }) {
           />
         </label>
 
-        <label className="relative">
-          <span className="sr-only">From date</span>
-          <FiCalendar className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="date"
-            value={filters.fromDate}
-            onChange={(event) => onChange('fromDate', event.target.value)}
-            aria-label="From date"
-            title="From date"
-            className={`${inputClass} pl-9`}
-          />
-        </label>
+        <DatePickerField label="From" value={filters.fromDate} onChange={(value) => onChange('fromDate', value)} />
 
-        <label className="relative">
-          <span className="sr-only">To date</span>
-          <FiCalendar className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input type="date" value={filters.toDate} onChange={(event) => onChange('toDate', event.target.value)} aria-label="To date" title="To date" className={`${inputClass} pl-9`} />
-        </label>
+        <DatePickerField label="To" value={filters.toDate} onChange={(value) => onChange('toDate', value)} />
 
         <label>
           <span className="sr-only">Order type</span>
@@ -92,7 +76,7 @@ function SalesFilters({ filters, onChange, onClear }) {
           <FiX /> Clear
         </button>
       </div>
-    </section>
+    </MobileFilterPanel>
   )
 }
 

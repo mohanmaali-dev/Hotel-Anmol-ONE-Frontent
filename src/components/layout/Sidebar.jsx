@@ -1,4 +1,6 @@
 import { NavLink } from 'react-router-dom'
+
+import BrandLogo from '../BrandLogo.jsx'
 import {
   FiBarChart2,
   FiBookOpen,
@@ -73,11 +75,7 @@ function Sidebar({ isOpen, onClose, permissions }) {
       >
         <div className="flex h-18 items-center justify-between border-b border-slate-100 px-5">
           <NavLink to="/dashboard" onClick={onClose} className="flex items-center gap-3">
-            <img
-              src="/logo.svg"
-              alt="DineDesk Restaurant Manager"
-              className="h-10 w-auto max-w-42"
-            />
+            <BrandLogo className="max-w-42" />
           </NavLink>
 
           <button

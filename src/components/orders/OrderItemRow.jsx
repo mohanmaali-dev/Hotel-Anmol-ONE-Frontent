@@ -33,6 +33,9 @@ function OrderItemRow({ item, menuItems, onChange, onRemove, canRemove }) {
           step="1"
           value={item.quantity}
           onChange={(event) => onChange('quantity', event.target.value)}
+          onBlur={(event) => {
+            if (event.target.value === '') onChange('quantity', 1)
+          }}
           className={inputClass}
           required
         />

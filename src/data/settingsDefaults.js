@@ -1,6 +1,8 @@
+import { appName } from '../config/app.js'
+
 export const defaultSettings = {
   restaurant: {
-    name: 'Restaurant',
+    name: appName,
     phone: '',
     email: '',
     address: '',

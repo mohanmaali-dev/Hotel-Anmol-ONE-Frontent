@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { FiArrowLeft, FiClock, FiFilter, FiX } from 'react-icons/fi'
+import { FiArrowLeft, FiClock, FiX } from 'react-icons/fi'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { getAllStockItems, getStockHistory } from '../../api/stockApi.js'
+import DatePickerField from '../../components/DatePickerField.jsx'
+import MobileFilterPanel from '../../components/MobileFilterPanel.jsx'
 import Pagination from '../../components/Pagination.jsx'
 import StockHistoryTable from '../../components/stock/StockHistoryTable.jsx'
 
@@ -45,13 +47,13 @@ function StockHistory() {
     <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8"><div className="page-content">
       <div className="mb-6"><Link to="/stock" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-primary-dark"><FiArrowLeft /> Back to Stock</Link><div className="mt-3 flex items-center gap-3"><h2 className="text-2xl font-bold tracking-tight text-slate-900">Stock History</h2><span className="grid size-8 place-items-center rounded-lg bg-primary-light text-primary-dark"><FiClock /></span></div><p className="mt-1 text-sm text-slate-500">A complete record of inventory movements.</p></div>
       {error && <div className="mb-5 flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"><span className="flex-1">{error}</span><button type="button" onClick={() => setError('')} aria-label="Close error message" className="grid size-6 place-items-center rounded-md hover:bg-rose-100"><FiX /></button></div>}
-      <section className="mb-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40"><div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800"><FiFilter className="text-primary" /> Filters</div><div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[1.3fr_1fr_1fr_1fr_auto]">
+      <MobileFilterPanel filters={filters} className="mb-5 p-4"><div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[1.3fr_1fr_1fr_1fr_auto]">
         <select aria-label="Stock item" value={filters.item} onChange={(event) => updateFilter('item', event.target.value)} className={inputClass}><option value="">All items</option>{items.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
         <select aria-label="Movement type" value={filters.type} onChange={(event) => updateFilter('type', event.target.value)} className={inputClass}><option value="">All movement types</option><option value="IN">Stock In</option><option value="OUT">Stock Out</option></select>
-        <label><span className="sr-only">From date</span><input type="date" value={filters.fromDate} onChange={(event) => updateFilter('fromDate', event.target.value)} className={inputClass} /></label>
-        <label><span className="sr-only">To date</span><input type="date" value={filters.toDate} onChange={(event) => updateFilter('toDate', event.target.value)} className={inputClass} /></label>
+        <DatePickerField label="From" value={filters.fromDate} onChange={(value) => updateFilter('fromDate', value)} />
+        <DatePickerField label="To" value={filters.toDate} onChange={(value) => updateFilter('toDate', value)} />
         <button type="button" onClick={clearFilters} className="flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><FiX /> Clear</button>
-      </div></section>
+      </div></MobileFilterPanel>
       <div className="space-y-5"><StockHistoryTable movements={movements} total={pagination.total} loading={loading} />{!loading && <Pagination pagination={pagination} onPageChange={setPage} label="movements" />}</div>
     </div></main>
   )

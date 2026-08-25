@@ -1,63 +1,94 @@
-# Restaurant Management Software — Owner Guide
+# Hotel Anmol One — Owner Guide
 
-This guide explains how to use the restaurant software in simple language. It is designed for restaurant owners, managers, cashiers, waiters, and staff.
+This guide explains the software in simple language. It is written for the hotel owner, manager, cashier, waiter, and store staff.
+
+For a presentation-style guide with visual cards, flows, calculations, and printable checklists, open [`HOTEL_ANMOL_ONE_VISUAL_GUIDE.html`](./HOTEL_ANMOL_ONE_VISUAL_GUIDE.html) in a web browser.
+
+You do not need technical knowledge to use this guide.
 
 ---
 
-## 1. What this software manages
+## 1. Understand the whole system in one minute
+
+The software manages two main flows.
+
+### Customer flow
 
 ```mermaid
 flowchart LR
-    A[Customer Order] --> B[Bill]
-    B --> C[Payment]
-    C --> D[Sale]
-
-    E[Supplier] --> F[Purchase]
-    F --> G[Stock Increases]
-
-    H[Menu Recipe] --> I[Order Completed]
-    I --> J[Stock Decreases]
-
-    K[Expenses] --> L[Reports]
-    D --> L
-    F --> L
-    G --> L
+    A[Create Order] --> B[Prepare Food]
+    B --> C[Complete Order]
+    C --> D[Stock Used]
+    C --> E[Generate Bill]
+    E --> F[Receive Payment]
+    F --> G[Sale Updated]
 ```
 
-The software helps manage:
+### Purchase flow
 
-- Customer orders
-- Bills and payments
-- Daily sales
-- Supplier purchases
-- Kitchen stock
-- Menu items and recipes
-- Suppliers
-- Restaurant expenses
-- Business reports
-- Staff users and permissions
+```mermaid
+flowchart LR
+    A[Add Supplier] --> B[Create Purchase]
+    B --> C[Receive Delivery]
+    C --> D[Mark Received]
+    D --> E[Stock Added]
+    E --> F[Stock History Saved]
+```
 
----
-
-## 2. Recommended first-time setup
-
-Complete these steps before taking real customer orders:
+The Reports page brings both flows together:
 
 ```mermaid
 flowchart TD
-    A[1. Restaurant Settings] --> B[2. Add Suppliers]
-    B --> C[3. Add Stock Items]
-    C --> D[4. Add Menu Categories]
-    D --> E[5. Add Menu Items and Recipes]
-    E --> F[6. Add Staff Users]
-    F --> G[Ready to Take Orders]
+    O[Orders and Sales] --> R[Reports]
+    P[Purchases] --> R
+    S[Current Stock] --> R
+    E[Expenses] --> R
 ```
 
-### Step 1: Restaurant Settings
+---
 
-Open **Settings** and enter:
+## 2. Main menu explained
 
-- Restaurant name
+| Menu | What it is used for |
+|---|---|
+| Dashboard | See today's important numbers and alerts |
+| Orders | Create and manage customer orders |
+| Billing | Generate bills and collect payments |
+| Sales | View sales created from bills |
+| Purchases | Record items bought from suppliers |
+| Stock | Check, add, or remove inventory |
+| Menu | Manage food categories, prices, and recipes |
+| Suppliers | Manage supplier details and purchase history |
+| Expenses | Record rent, electricity, salary, and other costs |
+| Reports | Review sales, purchases, expenses, stock, and payments |
+| Users | Control staff accounts and access |
+| Settings | Set hotel, billing, order, and stock defaults |
+| Excel | Import or download business data |
+
+If a staff member cannot see a menu option, they probably do not have permission to use it.
+
+---
+
+## 3. First-time setup
+
+Complete these steps before entering real customer orders.
+
+```mermaid
+flowchart TD
+    A[1. Save Hotel Settings] --> B[2. Add Suppliers]
+    B --> C[3. Add Stock Categories]
+    C --> D[4. Add Stock Items]
+    D --> E[5. Add Menu Categories]
+    E --> F[6. Add Menu Items and Recipes]
+    F --> G[7. Add Staff Users]
+    G --> H[Ready for Daily Use]
+```
+
+### 3.1 Save hotel settings
+
+Open **Settings** and check:
+
+- Hotel name
 - Phone number
 - Email
 - Address
@@ -65,96 +96,103 @@ Open **Settings** and enter:
 - Currency
 - Bill prefix
 - Tax percentage
+- Default additional charge
+- Discount setting
 - Bill footer message
-- Low-stock alert settings
+- Low-stock alert
+- Default minimum stock
 
 Select **Save Settings**.
 
-### Step 2: Add Suppliers
+These details appear on bills and other records.
+
+### 3.2 Add suppliers
 
 Open **Suppliers → Add Supplier**.
 
-Enter the supplier's:
+Enter the supplier's name, phone number, contact person, and address. Email and GST number can be added when available.
 
-- Name
-- Contact person
-- Phone number
-- Address
-- Email, if available
-- GST or Tax number, if available
+### 3.3 Add stock categories
 
-### Step 3: Add Stock Items
+Open **Stock → Manage Categories**.
 
-Open **Stock → Add Stock Item**.
+Useful categories include:
+
+- Vegetables
+- Grocery
+- Dairy
+- Drinks
+- Cleaning
+- Packaging
+
+### 3.4 Add stock items
+
+Open **Stock → Add Item**.
 
 Example:
 
 | Field | Example |
 |---|---|
 | Item Name | Paneer |
-| Category | Oil & Dairy |
+| Category | Dairy |
 | Unit | Kg |
-| Stock Available Now | 10 Kg |
-| Buying Price | ₹400 per Kg |
-| Low Stock Alert At | 2 Kg |
+| Opening Stock | 10 |
+| Purchase Price | ₹400 |
+| Minimum Stock | 2 |
 | Supplier | Fresh Farm Foods |
 
-Use one unit for each stock item:
+Choose the unit used to count the complete stock item:
 
-- Paneer, rice, flour → Kg or Gram
-- Oil, milk, sauce → Litre or ml
-- Bun, egg, bottle → Piece
+| Item | Recommended stock unit |
+|---|---|
+| Paneer, rice, flour | Kg |
+| Oil, milk, sauce | Litre |
+| Egg, bun, bottle | Piece |
 
-### Step 4: Add Menu Categories
+### 3.5 Add menu categories and menu items
 
-Open **Menu → Categories**.
+Open **Menu → Categories** and create categories such as Breakfast, Starter, Main Course, Drinks, and Dessert.
 
-Examples:
-
-- Breakfast
-- Starter
-- Main Course
-- Snacks
-- Drinks
-- Dessert
-
-### Step 5: Add Menu Items
-
-Open **Menu → Menu Items → Add Menu Item**.
+Then open **Menu Items → Add Menu Item**.
 
 Enter:
 
 - Item name
 - Category
 - Selling price
-- Serving size, such as `1 Plate` or `250 ml`
+- Serving or quantity, such as `1 Plate`, `1 Glass`, or `250 ml`
 - Availability
+- Track Stock
 
-Enable **Track Stock** when the menu item uses ingredients from inventory.
+Enable **Track Stock** only when the item should use stock according to a recipe.
 
 ---
 
-## 3. Understanding recipes and stock deduction
+## 4. Stock units and recipes
 
-The recipe tells the software how much stock one plate or serving uses.
+This is the most important stock concept.
+
+The stock item keeps the total available quantity. The menu recipe keeps the quantity used by one serving.
 
 ### Example: Paneer Tikka
 
-Stock item:
+The stock room has:
 
 ```text
-Paneer available: 10 Kg
+Paneer: 10 Kg
+Curd: 5 Kg
+Oil: 3 Litre
 ```
 
-Menu recipe:
+One plate uses:
 
-| Ingredient | Quantity per plate | Deduction unit | Stock unit |
-|---|---:|---|---|
-| Paneer | 250 | Gram | Kg |
-| Curd | 100 | Gram | Kg |
-| Oil | 20 | ml | Litre |
+| Ingredient | Used for one plate | Stock is stored in |
+|---|---:|---|
+| Paneer | 250 Gram | Kg |
+| Curd | 100 Gram | Kg |
+| Oil | 20 ml | Litre |
 
-For three plates of Paneer Tikka:
+If the customer orders three plates:
 
 ```text
 Paneer: 250 Gram × 3 = 750 Gram = 0.75 Kg
@@ -162,54 +200,60 @@ Curd:   100 Gram × 3 = 300 Gram = 0.30 Kg
 Oil:     20 ml × 3 = 60 ml = 0.06 Litre
 ```
 
-The stock is removed only when the order is marked **Completed**.
+New stock after completing the order:
+
+```text
+Paneer: 10.00 − 0.75 = 9.25 Kg
+Curd:    5.00 − 0.30 = 4.70 Kg
+Oil:     3.00 − 0.06 = 2.94 Litre
+```
+
+The software supports these simple conversions:
+
+- Kg and Gram
+- Litre and ml
+- Piece with Piece
+
+Do not mix unrelated units. For example, ml cannot be deducted from an item stored in Kg.
+
+### When stock is deducted
 
 ```mermaid
 flowchart LR
     A[Order Created] --> B[Preparing]
     B --> C[Ready]
-    C --> D{Complete Order}
-    D --> E[Check Ingredients]
-    E -->|Enough stock| F[Deduct Stock]
+    C --> D{Mark Completed}
+    D --> E[Check Stock]
+    E -->|Enough| F[Deduct Ingredients Once]
     F --> G[Save Stock History]
-    E -->|Not enough| H[Show Missing Ingredients]
+    E -->|Not Enough| H[Show Missing Items]
 ```
 
-Important:
+Remember:
 
-- Creating an order does not remove stock.
-- Generating a bill does not remove stock.
-- Updating payment does not remove stock.
-- Completing the order removes stock once.
-- A cancelled order does not remove stock.
-- Items with **Track Stock = No** do not affect inventory.
+- Creating an order does not deduct stock.
+- Generating a bill does not deduct stock.
+- Receiving payment does not deduct stock.
+- Marking an order **Completed** deducts recipe stock once.
+- Cancelling an order before completion does not deduct stock.
+- A menu item with **Track Stock = No** does not affect inventory.
 
 ---
 
-## 4. Daily customer order flow
-
-```mermaid
-flowchart LR
-    A[New Order] --> B[Add Menu Items]
-    B --> C[Save Order]
-    C --> D[Update Status]
-    D --> E[Complete Order]
-    E --> F[Generate Bill]
-    F --> G[Receive Payment]
-    G --> H[Sale Updated]
-```
-
-### Create an order
+## 5. Create and complete a customer order
 
 Open **Orders → New Order**.
 
-1. Select Dine In, Parcel, or Room.
-2. Enter the table, area, or room number if required.
-3. Enter the customer name if available.
-4. Select menu items.
-5. Enter quantities.
-6. Check the bill summary.
-7. Select **Save Order**.
+1. Choose Dine In, Parcel, or Room.
+2. Select the area type.
+3. Enter the table, area, or room number.
+4. Enter the customer name.
+5. Select a menu item.
+6. Enter its quantity.
+7. Add more items when required.
+8. Check discount and additional charges.
+9. Choose Paid or Not Paid.
+10. Select **Save Order**.
 
 The software calculates:
 
@@ -219,79 +263,108 @@ Subtotal = Total of all item amounts
 Final Amount = Subtotal − Discount + Additional Charges
 ```
 
-### Update order status
+### Order statuses
 
-Use the status that matches the kitchen activity:
-
-| Status | Meaning |
+| Status | Use it when |
 |---|---|
-| Pending | Order received |
-| Preparing | Kitchen is preparing it |
-| Ready | Food is ready to serve or pack |
-| Completed | Order is finished and recipe stock is deducted |
-| Cancelled | Order will not be completed |
+| Pending | The order has just been received |
+| Preparing | The kitchen is making the order |
+| Ready | The order is ready to serve or pack |
+| Completed | The order has been served or handed over |
+| Cancelled | The order will not be prepared |
 
-### If ingredients are insufficient
+Only select **Completed** after the food is actually finished. Completing the order updates stock.
 
-The order will not be completed. The screen shows:
+### If stock is not enough
+
+The software will not complete the order. It shows:
 
 - Ingredient name
 - Required quantity
 - Available quantity
 
-Add the missing stock, then complete the order again.
+Add the missing stock and then try **Completed** again.
 
 ---
 
-## 5. Billing and payment
+## 6. Generate a bill and receive payment
 
-Open an Order Details page and select **Generate Bill**.
+Open the Order Details page and select **Generate Bill**.
 
-Only one bill can be generated for an order.
+Only one bill is created for each order. If a bill already exists, the software opens that bill instead of creating another one.
 
-### Payment statuses
+### Customer pays immediately
 
-| Paid Amount | Payment Status |
+```mermaid
+flowchart LR
+    A[Order] --> B[Generate Bill]
+    B --> C[Enter Full Paid Amount]
+    C --> D[Status: Paid]
+    D --> E[Sale Updated]
+```
+
+### Customer pays later
+
+This is the correct flow for a **Not Paid** order:
+
+```mermaid
+flowchart LR
+    A[Save Not Paid Order] --> B[Generate Bill]
+    B --> C[Paid: ₹0]
+    C --> D[Customer Pays Later]
+    D --> E[Open Bill]
+    E --> F[Update Payment]
+    F --> G[Order, Bill and Sale Updated]
+```
+
+Do not manually change only the order payment status. Always update the payment from **Bill Details** so every connected record stays correct.
+
+### Partial payment
+
+Example:
+
+```text
+Final Amount: ₹1,000
+Paid Now:       ₹400
+Due Amount:     ₹600
+Status: Partial
+```
+
+When the customer pays the remaining ₹600, open the same bill and update the paid amount to ₹1,000.
+
+### Payment rules
+
+| Paid amount | Status |
 |---:|---|
 | ₹0 | Not Paid |
-| Less than final amount | Partial |
+| More than ₹0 but less than final amount | Partial |
 | Equal to final amount | Paid |
-
-Calculation:
 
 ```text
 Due Amount = Final Amount − Paid Amount
 ```
 
-Payment types:
-
-- Cash
-- UPI
-- Card
-
-When payment is updated in Billing, the related Sale updates automatically.
-
-### Print or download a bill
+Payment types are Cash, UPI, and Card.
 
 From Bill Details:
 
-- **Print Bill** opens a clean printable bill.
-- **Download Bill** saves the bill as a PDF.
+- **Print Bill** prints a clean bill.
+- **Download Bill** saves a PDF bill.
 
 ---
 
-## 6. Sales
+## 7. Understand Sales
 
-Sales are created automatically from bills. Do not enter sales manually.
+Do not create sales manually.
 
 ```mermaid
 flowchart LR
-    A[Bill Generated] --> B[Sale Created]
-    B --> C[Payment Updated]
-    C --> D[Sale Amounts Updated]
+    A[Bill Created] --> B[Sale Created Automatically]
+    B --> C[Bill Payment Updated]
+    C --> D[Sale Payment Updated Automatically]
 ```
 
-The Sales page shows:
+Use Sales to review:
 
 - Total sales
 - Paid amount
@@ -302,66 +375,53 @@ The Sales page shows:
 
 ---
 
-## 7. Purchase and stock flow
+## 8. Buy stock from a supplier
 
-Use Purchases when stock comes from a supplier.
-
-```mermaid
-flowchart LR
-    A[Select Supplier] --> B[Create Purchase]
-    B --> C[Ordered]
-    C --> D[Mark Received]
-    D --> E[Stock Increases]
-    E --> F[Stock History Created]
-```
-
-### Create a purchase
+Use Purchases when goods come from a supplier.
 
 Open **Purchases → New Purchase**.
 
 1. Select the supplier.
-2. Enter the invoice number and date.
-3. Select stock items.
-4. Enter quantity and purchase price.
-5. Enter payment information.
+2. Enter purchase date and supplier invoice number.
+3. Add stock items.
+4. Enter quantity, unit, and purchase price.
+5. Enter payment details.
 6. Save as Draft or Ordered.
 
-### Mark as Received
+When the delivery arrives, open Purchase Details and select **Mark as Received**.
 
-When the supplier delivers the items, open Purchase Details and select **Mark as Received**.
+```mermaid
+flowchart LR
+    A[Draft or Ordered] --> B[Delivery Arrives]
+    B --> C[Mark Received]
+    C --> D[Stock Added Once]
+    D --> E[History Saved with Supplier]
+```
 
-The backend will:
+Important:
 
-- Increase stock quantities.
-- Add Stock In history.
-- Store the supplier and purchase reference.
-- Prevent the same purchase from increasing stock twice.
-
-Do not manually use Stock In for the same received purchase.
+- Stock increases only after **Mark as Received**.
+- The same purchase cannot add stock twice.
+- Do not use manual Stock In for the same purchase.
+- A received purchase is historical business data and should not be deleted.
 
 ---
 
-## 8. Manual Stock In and Stock Out
+## 9. Manual Stock In and Stock Out
 
 ### Manual Stock In
 
-Use this for stock that was not entered through a supplier purchase, such as an opening correction.
+Use this only when stock is not coming through a normal purchase, for example:
 
-Enter:
+- Opening balance
+- Stock correction
+- Free item received
 
-- Item
-- Quantity
-- Purchase price
-- Supplier, if applicable
-- Reference
-- Date
-- Note
+Enter the item, quantity, price, supplier when known, reference, date, and note.
 
 ### Manual Stock Out
 
-Use this for stock not connected to a completed customer order.
-
-Reasons include:
+Use this when stock is removed without a completed customer order, for example:
 
 - Kitchen Usage
 - Wastage
@@ -369,27 +429,27 @@ Reasons include:
 - Adjustment
 - Other
 
-The software will not allow stock to go below zero.
+The software does not allow stock to go below zero.
 
-### Stock status
+### Stock statuses
 
-| Condition | Status |
+| Quantity | Status |
 |---|---|
-| Quantity is 0 | Out of Stock |
-| Quantity is at or below minimum stock | Low Stock |
-| Quantity is above minimum stock | In Stock |
+| Zero | Out of Stock |
+| At or below minimum stock | Low Stock |
+| Above minimum stock | In Stock |
 
 ### Stock History
 
-Every stock movement is recorded. Click a purchase or order number in the **Reference** column to open its details.
+Every stock movement is saved. The history shows the old quantity, movement quantity, new quantity, reason, supplier, and reference.
+
+Select an order or purchase reference to open its details.
 
 ---
 
-## 9. Expenses
+## 10. Record expenses
 
-Use Expenses for restaurant operating costs. Do not enter supplier purchases as expenses.
-
-Examples:
+Use Expenses for running costs such as:
 
 - Rent
 - Electricity
@@ -402,13 +462,13 @@ Examples:
 
 Open **Expenses → Add Expense**, enter the details, and save.
 
+Do not enter supplier purchases as general expenses. Purchases and Expenses are separate records.
+
 ---
 
-## 10. Reports
+## 11. Read reports
 
-Reports use saved orders, bills, sales, purchases, stock, and expenses.
-
-Available reports:
+Open **Reports** and choose the required report:
 
 - Sales
 - Purchases
@@ -417,175 +477,168 @@ Available reports:
 - Payments
 - Orders
 
-Use **From Date** and **To Date**, then select **Apply Filter**.
+To check a date period:
 
-Select **Reset** to remove the filters.
+1. Select the From date.
+2. Select the To date.
+3. Choose any extra filters.
+4. Select **View**.
 
-The Print button prints the visible report. Excel export downloads real saved data.
+Dates are selected from the calendar and displayed as `DD/MM/YY`.
+
+Use **Clear** to remove filters. Use **Print** for a paper copy and **Download Report** for an Excel file.
+
+Reports use saved business records. They should not be calculated by hand.
 
 ---
 
-## 11. Users and permissions
+## 12. Staff users and permissions
 
-### Roles
-
-| Role | Suggested use |
+| Role | Recommended person |
 |---|---|
-| Admin | Restaurant owner or system administrator |
-| Manager | Restaurant manager |
+| Admin | Owner or trusted administrator |
+| Manager | Hotel or restaurant manager |
 | Cashier | Billing and payment staff |
 | Waiter | Order-taking staff |
-| Staff | Limited operational access |
+| Staff | Store or operating staff |
 
-Permissions control what a user can:
+Permissions decide whether a person can View, Create, Edit, or Delete information in each module.
 
-- View
-- Create
-- Edit
-- Delete
+Recommended safety rules:
 
-An unavailable sidebar option means that the user does not have permission for that module.
-
-Important:
-
+- Keep at least one active Admin account.
 - Do not share the Admin password.
-- Deactivate a user who no longer works at the restaurant.
-- Password changes and deactivation end that user's saved sessions.
-
----
-
-## 12. Login and session
-
-After login, the software keeps the user signed in securely.
-
-```mermaid
-flowchart LR
-    A[User Logs In] --> B[Secure Session Starts]
-    B --> C[Session Renews Automatically]
-    C --> D[User Continues Working]
-    D --> E[Logout]
-```
-
-The user normally does not need to log in again during the working day. A login is requested when:
-
-- The user selects Logout.
-- The saved session reaches its final expiry.
-- The password is changed.
-- The account is deactivated.
+- Give staff only the access needed for their work.
+- Deactivate an account when the employee leaves.
+- Review permissions after changing a person's role.
 
 ---
 
 ## 13. Excel import and export
 
-### Import flow
+### Import safely
 
 ```mermaid
 flowchart LR
-    A[Download Sample] --> B[Fill Excel File]
+    A[Download Sample] --> B[Fill Rows]
     B --> C[Choose File]
     C --> D[Preview]
-    D --> E[Fix Invalid Rows]
-    E --> F[Import Data]
+    D --> E{Errors?}
+    E -->|Yes| F[Fix File]
+    F --> C
+    E -->|No| G[Import Data]
 ```
 
-Always use the sample template and keep its column names unchanged.
+Rules:
 
-The preview shows:
-
-- Total rows
-- Valid rows
-- Invalid rows
-- Error messages
-
-Data is not imported until **Import Data** is selected.
+- Start with the sample file.
+- Do not change column names.
+- Preview before importing.
+- Fix invalid rows before confirming.
+- Check the result for imported, skipped, and failed rows.
 
 ### Export
 
-The software can export:
+Exports are available for Orders, Sales, Purchases, Stock, Expenses, Suppliers, Menu Items, and Reports.
 
-- Menu items
-- Orders
-- Sales
-- Purchases
-- Stock
-- Expenses
-- Suppliers
-- Reports
+Choose dates when the export provides date filters, then select **Export Excel**.
 
 ---
 
-## 14. Safe deletion rules
+## 14. Delete, cancel, deactivate, or mark unavailable?
 
-Business records are connected. The software may prevent deletion when a record is already being used.
+Use the safest action for the situation:
 
-Examples:
+| Situation | Recommended action |
+|---|---|
+| Wrong order that has not affected stock or billing | Cancel or delete when allowed |
+| Completed order | Keep it for stock and report history |
+| Supplier no longer used | Mark Inactive |
+| Menu item temporarily not sold | Mark Unavailable |
+| Stock item no longer purchased | Mark Inactive |
+| Staff member leaves | Mark user Inactive |
+| Received purchase | Keep it because it changed stock |
 
-- A supplier with purchases should remain in history.
-- A received purchase cannot be deleted because it changed stock.
-- A completed order cannot be deleted because it changed stock and reporting.
-- A stock item used in a recipe cannot be removed until the recipe is changed.
-- A menu item used by an order may need to remain for order history.
+The delete confirmation checks whether another record is using the entry. If it is being used, follow the places shown in the message before trying again.
 
-When possible, use **Inactive**, **Unavailable**, or **Cancelled** instead of deleting historical records.
+Never delete business history only to make a report look different. Correct the related entry using the proper business action.
 
 ---
 
-## 15. Suggested daily routine
+## 15. Daily owner routine
 
-### At opening time
+### Opening checklist
 
-1. Check the Dashboard.
-2. Check Low Stock items.
-3. Receive pending supplier purchases.
-4. Confirm available menu items.
+- [ ] Open Dashboard.
+- [ ] Check Low Stock and Out of Stock items.
+- [ ] Receive delivered purchases.
+- [ ] Check unavailable menu items.
+- [ ] Confirm staff can log in.
 
 ### During service
 
-1. Create customer orders.
-2. Update preparation status.
-3. Complete finished orders.
-4. Generate bills.
-5. Update payments.
+- [ ] Create orders correctly.
+- [ ] Update Pending, Preparing, and Ready statuses.
+- [ ] Mark served orders Completed.
+- [ ] Generate bills.
+- [ ] Record full or partial payments.
+- [ ] Record wastage when it happens.
 
-### At closing time
+### Closing checklist
 
-1. Check unpaid or partial bills.
-2. Enter daily expenses.
-3. Review Sales and Payment reports.
-4. Check wastage or manual Stock Out entries.
-5. Confirm low-stock items for the next purchase.
+- [ ] Check Not Paid and Partial bills.
+- [ ] Enter all daily expenses.
+- [ ] Review Sales report.
+- [ ] Review Payment report.
+- [ ] Check manual Stock Out entries.
+- [ ] Prepare tomorrow's purchase list from Low Stock items.
 
 ---
 
-## 16. Complete business flow
+## 16. Common questions
 
-```mermaid
-flowchart TD
-    S[Supplier] --> P[Purchase]
-    P -->|Received| SI[Stock In]
-    SI --> ST[Current Stock]
+### Why did stock not decrease after creating an order?
 
-    ST --> R[Menu Recipe]
-    R --> O[Customer Order]
-    O -->|Completed| SO[Stock Out]
+Stock decreases only when the order is marked **Completed**.
 
-    O --> B[Bill]
-    B --> PAY[Payment]
-    PAY --> SALE[Sale]
+### Why did stock not increase after creating a purchase?
 
-    EXP[Expenses] --> REP[Reports]
-    P --> REP
-    ST --> REP
-    SALE --> REP
-```
+Stock increases only when the purchase is marked **Received**.
 
-This is the main idea of the software:
+### The customer paid later. Where should I update it?
+
+Open the existing bill and use **Update Payment**. The Order and Sale will update automatically.
+
+### Why can I not complete an order?
+
+Check the insufficient-stock message. Add the missing ingredient or correct its recipe.
+
+### Why can I not delete an entry?
+
+The entry is probably connected to another business record. Read the short dependency message and use Inactive, Unavailable, or Cancelled when suitable.
+
+### Why is a menu item missing from New Order?
+
+Check that the menu item and its category are both Active or Available.
+
+### Why is a menu option missing from the sidebar?
+
+The logged-in user does not have View permission for that module.
+
+### Why does a number look wrong in a report?
+
+Check the selected dates and filters first. Then open the related order, bill, purchase, or expense record.
+
+---
+
+## 17. Five rules to remember
 
 ```text
-Purchase adds stock.
-Completed orders use stock.
-Bills create sales.
-Payments update sales.
-Expenses and all business activity appear in reports.
+1. Received purchases add stock.
+2. Completed orders use stock.
+3. Bills create sales.
+4. Bill payments update orders and sales.
+5. Expenses and all saved activity appear in reports.
 ```
 
+Following these five rules keeps stock, payments, and reports correct.

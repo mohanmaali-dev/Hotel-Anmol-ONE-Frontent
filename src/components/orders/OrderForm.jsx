@@ -82,7 +82,9 @@ function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onCle
           }
         }
         if (field === 'quantity') {
-          return { ...item, quantity: Math.max(1, Number(value) || 1) }
+          // Keep the typed value while editing so the default 1 can be cleared
+          // before entering a new quantity such as 20.
+          return { ...item, quantity: value }
         }
         return item
       }),
@@ -100,6 +102,10 @@ function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onCle
     }
     if (!selectedItems.length) {
       setValidationError('Please select at least one available menu item.')
+      return
+    }
+    if (selectedItems.some((item) => !Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1)) {
+      setValidationError('Please enter a quantity of 1 or more for every selected item.')
       return
     }
     if (discountAmount > subtotal + additionalChargesAmount) {

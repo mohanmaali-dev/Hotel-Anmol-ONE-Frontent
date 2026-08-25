@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { FiArrowLeft, FiFilter, FiPlus, FiSearch, FiTag, FiX } from 'react-icons/fi'
+import { FiArrowLeft, FiPlus, FiSearch, FiTag, FiX } from 'react-icons/fi'
 import { Link, useLocation } from 'react-router-dom'
 
 import { deleteMenuItem, getAllMenuCategories, getMenuItems, updateMenuItem } from '../../api/menuApi.js'
 import ConfirmDeleteModal from '../../components/ConfirmDeleteModal.jsx'
+import MobileFilterPanel from '../../components/MobileFilterPanel.jsx'
 import Pagination from '../../components/Pagination.jsx'
 import Toast from '../../components/Toast.jsx'
 import MenuItemTable from '../../components/menu/MenuItemTable.jsx'
@@ -59,12 +60,12 @@ function MenuItems() {
       <Toast message={notice?.text} type={notice?.type} onClose={() => setNotice(null)} />
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><Link to="/menu" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-primary-dark"><FiArrowLeft /> Back to Menu</Link><div className="mt-3 flex items-center gap-3"><h2 className="text-2xl font-bold tracking-tight text-slate-900">Menu Items</h2><span className="grid size-8 place-items-center rounded-lg bg-primary-light text-primary-dark"><FiTag /></span></div><p className="mt-1 text-sm text-slate-500">Manage prices, availability, and stock recipes.</p></div>{can('menu', 'create') && <Link to="/menu/items/new" className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark"><FiPlus /> Add Menu Item</Link>}</div>
       <MenuSectionNav />
-      <section className="mb-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40"><div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800"><FiFilter className="text-primary" /> Filters</div><div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[2fr_1fr_1fr_auto]">
+      <MobileFilterPanel filters={filters} className="mb-5 p-4"><div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[2fr_1fr_1fr_auto]">
         <label className="relative"><span className="sr-only">Search item</span><FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input type="search" value={filters.search} onChange={(event) => updateFilter('search', event.target.value)} placeholder="Search item" className={`${inputClass} pl-9`} /></label>
         <select aria-label="Category" value={filters.category} onChange={(event) => updateFilter('category', event.target.value)} className={inputClass}><option value="">All categories</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select>
         <select aria-label="Availability" value={filters.availability} onChange={(event) => updateFilter('availability', event.target.value)} className={inputClass}><option value="">All availability</option><option value="Available">Available</option><option value="Unavailable">Unavailable</option></select>
         <button type="button" onClick={() => { setPage(1); setFilters(emptyFilters) }} className="flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><FiX /> Clear</button>
-      </div></section>
+      </div></MobileFilterPanel>
       <div className="space-y-5"><MenuItemTable items={items} categories={categories} loading={loading} total={pagination.total} canEdit={can('menu', 'edit')} canDelete={can('menu', 'delete')} onToggleAvailability={(id) => handleToggle(items.find((item) => item.id === id))} onDelete={setPendingDelete} />{!loading && <Pagination pagination={pagination} onPageChange={setPage} label="menu items" />}</div>
       <ConfirmDeleteModal open={Boolean(pendingDelete)} title={`Delete ${pendingDelete?.name || 'menu item'}?`} message="This menu item and its recipe will be permanently removed." dependencyType="menu-item" recordId={pendingDelete?.id} confirmLabel="Delete Menu Item" loading={deleting} onConfirm={handleDelete} onClose={() => setPendingDelete(null)} />
     </div></main>

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Anmol One — Visual Owner Guide</title>
+  <style>
+    :root {
+      --brand: #c45a35;
+      --brand-dark: #873d27;
+      --brand-soft: #fff1eb;
+      --ink: #292524;
+      --muted: #64748b;
+      --line: #e7e5e4;
+      --paper: #ffffff;
+      --page: #faf8f6;
+      --green: #15803d;
+      --green-soft: #ecfdf3;
+      --amber: #b45309;
+      --amber-soft: #fff7ed;
+      --red: #be123c;
+      --red-soft: #fff1f2;
+      --blue: #1d4ed8;
+      --blue-soft: #eff6ff;
+      --shadow: 0 12px 35px rgba(74, 45, 35, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--page); color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.55; }
+    a { color: inherit; }
+    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    .hero { position: relative; overflow: hidden; padding: 54px 0 46px; background: linear-gradient(135deg, #fff 0%, #fff7f2 55%, #fbe7dc 100%); border-bottom: 1px solid #f0d9ce; }
+    .hero::after { content: ""; position: absolute; right: -120px; top: -190px; width: 480px; height: 480px; border-radius: 50%; border: 70px solid rgba(196,90,53,.07); }
+    .brand { position: relative; z-index: 1; display: flex; align-items: center; gap: 16px; }
+    .mark { display: grid; width: 66px; height: 66px; place-items: center; border-radius: 18px; background: var(--brand); box-shadow: 0 12px 25px rgba(196,90,53,.25); }
+    .mark svg { width: 46px; height: 46px; }
+    .brand small { display: block; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+    .brand strong { display: block; margin-top: 3px; font-size: 25px; letter-spacing: -.03em; }
+    .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.25fr .75fr; gap: 42px; align-items: end; margin-top: 42px; }
+    h1 { margin: 0; max-width: 760px; font-size: clamp(38px, 6vw, 67px); line-height: 1.03; letter-spacing: -.055em; }
+    .hero p { max-width: 680px; margin: 20px 0 0; color: var(--muted); font-size: 18px; }
+    .hero-card { padding: 22px; border: 1px solid rgba(196,90,53,.2); border-radius: 20px; background: rgba(255,255,255,.76); backdrop-filter: blur(10px); box-shadow: var(--shadow); }
+    .hero-card b { display: block; color: var(--brand-dark); font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+    .hero-card ol { margin: 13px 0 0; padding-left: 20px; color: #57534e; }
+    .hero-card li + li { margin-top: 7px; }
+    .nav { position: sticky; z-index: 20; top: 0; overflow-x: auto; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.94); backdrop-filter: blur(12px); }
+    .nav-inner { display: flex; gap: 6px; padding: 10px 0; }
+    .nav a { flex: 0 0 auto; padding: 8px 12px; border-radius: 9px; color: #57534e; text-decoration: none; font-size: 13px; font-weight: 700; }
+    .nav a:hover { color: var(--brand-dark); background: var(--brand-soft); }
+    main { padding: 44px 0 70px; }
+    section { scroll-margin-top: 80px; margin-bottom: 34px; padding: 30px; border: 1px solid var(--line); border-radius: 22px; background: var(--paper); box-shadow: 0 4px 20px rgba(41,37,36,.035); }
+    .section-head { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 25px; }
+    .number { display: grid; flex: 0 0 auto; width: 42px; height: 42px; place-items: center; border-radius: 12px; color: #fff; background: var(--brand); font-weight: 900; }
+    h2 { margin: 0; font-size: clamp(24px, 3vw, 32px); line-height: 1.15; letter-spacing: -.03em; }
+    .section-head p { margin: 7px 0 0; color: var(--muted); }
+    h3 { margin: 26px 0 12px; font-size: 18px; }
+    .flow { display: flex; gap: 10px; align-items: stretch; overflow-x: auto; padding: 8px 2px 14px; }
+    .flow-card { position: relative; flex: 1 0 145px; min-width: 145px; padding: 17px 15px; border: 1px solid var(--line); border-radius: 15px; background: #fff; text-align: center; }
+    .flow-card + .flow-card::before { content: "→"; position: absolute; left: -17px; top: calc(50% - 13px); display: grid; width: 24px; height: 24px; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--brand); font-weight: 900; }
+    .flow-card .icon { display: grid; width: 38px; height: 38px; margin: 0 auto 10px; place-items: center; border-radius: 11px; background: var(--brand-soft); color: var(--brand-dark); font-size: 19px; }
+    .flow-card b { display: block; font-size: 14px; }
+    .flow-card span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .flow-card.success { border-color: #bbf7d0; background: var(--green-soft); }
+    .flow-card.warning { border-color: #fed7aa; background: var(--amber-soft); }
+    .grid-2, .grid-3, .grid-4 { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .info { padding: 18px; border: 1px solid var(--line); border-radius: 15px; background: #fff; }
+    .info b { display: block; margin-bottom: 5px; }
+    .info p { margin: 0; color: var(--muted); font-size: 14px; }
+    .info.blue { border-color: #bfdbfe; background: var(--blue-soft); }
+    .info.green { border-color: #bbf7d0; background: var(--green-soft); }
+    .info.amber { border-color: #fed7aa; background: var(--amber-soft); }
+    .info.red { border-color: #fecdd3; background: var(--red-soft); }
+    .setup { counter-reset: setup; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; }
+    .setup-card { counter-increment: setup; padding: 17px; border: 1px solid var(--line); border-radius: 15px; }
+    .setup-card::before { content: counter(setup); display: grid; width: 30px; height: 30px; margin-bottom: 12px; place-items: center; border-radius: 9px; background: var(--brand-soft); color: var(--brand-dark); font-weight: 900; }
+    .setup-card b { display: block; }
+    .setup-card span { display: block; margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .calculation { overflow: hidden; border: 1px solid #fed7aa; border-radius: 18px; background: linear-gradient(135deg,#fffaf5,#fff); }
+    .calc-title { padding: 17px 20px; background: var(--amber-soft); color: #7c2d12; font-weight: 800; }
+    .calc-body { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 15px; align-items: center; padding: 22px; text-align: center; }
+    .calc-box { padding: 17px 10px; border: 1px solid var(--line); border-radius: 13px; background: #fff; }
+    .calc-box strong { display: block; margin-top: 5px; color: var(--brand-dark); font-size: 22px; }
+    .operator { color: var(--brand); font-size: 26px; font-weight: 900; }
+    .stock-bars { display: grid; gap: 16px; margin-top: 20px; }
+    .stock-row { display: grid; grid-template-columns: 95px 1fr 120px; gap: 12px; align-items: center; font-size: 13px; }
+    .bar { overflow: hidden; height: 12px; border-radius: 999px; background: #f1f5f9; }
+    .bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--brand),#e68d69); }
+    .status-track { display: grid; grid-template-columns: repeat(5,1fr); overflow: hidden; border: 1px solid var(--line); border-radius: 15px; }
+    .status { position: relative; padding: 18px 12px; text-align: center; font-size: 13px; font-weight: 800; }
+    .status + .status { border-left: 1px solid var(--line); }
+    .status small { display: block; margin-top: 5px; color: var(--muted); font-weight: 500; }
+    .status.done { color: var(--green); background: var(--green-soft); }
+    .status.stop { color: var(--red); background: var(--red-soft); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid var(--line); text-align: left; }
+    th { color: var(--muted); background: #fafafa; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    tr:last-child td { border-bottom: 0; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 15px; }
+    .pill { display: inline-flex; padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+    .pill.green { color: var(--green); background: var(--green-soft); }
+    .pill.amber { color: var(--amber); background: var(--amber-soft); }
+    .pill.red { color: var(--red); background: var(--red-soft); }
+    .do-dont { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+    .do-dont article { padding: 20px; border-radius: 16px; }
+    .do { border: 1px solid #bbf7d0; background: var(--green-soft); }
+    .dont { border: 1px solid #fecdd3; background: var(--red-soft); }
+    ul.clean { margin: 13px 0 0; padding: 0; list-style: none; }
+    ul.clean li { position: relative; padding-left: 25px; }
+    ul.clean li + li { margin-top: 9px; }
+    .do li::before, .dont li::before { position: absolute; left: 0; font-weight: 900; }
+    .do li::before { content: "✓"; color: var(--green); }
+    .dont li::before { content: "×"; color: var(--red); }
+    .checklist { display: grid; gap: 9px; margin-top: 15px; }
+    .check { display: flex; gap: 10px; align-items: flex-start; padding: 11px 12px; border: 1px solid var(--line); border-radius: 11px; background: #fff; font-size: 14px; }
+    .box { flex: 0 0 auto; width: 18px; height: 18px; border: 2px solid #d6d3d1; border-radius: 5px; }
+    .rule { display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 12px; background: #fafafa; }
+    .rule + .rule { margin-top: 9px; }
+    .rule strong { display: grid; flex: 0 0 auto; width: 30px; height: 30px; place-items: center; border-radius: 9px; color: #fff; background: var(--brand); }
+    details { border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    details + details { margin-top: 9px; }
+    summary { padding: 14px 16px; cursor: pointer; font-weight: 750; }
+    details p { margin: 0; padding: 0 16px 16px; color: var(--muted); }
+    .footer { padding: 35px 0 55px; color: var(--muted); text-align: center; font-size: 13px; }
+    @media (max-width: 900px) {
+      .hero-grid, .grid-3, .grid-4, .setup { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .calc-body { grid-template-columns: 1fr; }
+      .operator { transform: rotate(90deg); }
+      .status-track { grid-template-columns: 1fr; }
+      .status + .status { border-top: 1px solid var(--line); border-left: 0; }
+    }
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 20px,1180px); }
+      .hero { padding-top: 30px; }
+      .hero-grid, .grid-2, .grid-3, .grid-4, .setup, .do-dont { grid-template-columns: 1fr; }
+      section { padding: 20px 16px; border-radius: 17px; }
+      .stock-row { grid-template-columns: 75px 1fr; }
+      .stock-row > :last-child { grid-column: 2; }
+    }
+    @media print {
+      body { background: #fff; font-size: 11px; }
+      .nav { display: none; }
+      .hero { padding: 25px 0; }
+      .hero-card { box-shadow: none; }
+      main { padding-top: 20px; }
+      section { break-inside: avoid; box-shadow: none; margin-bottom: 14px; padding: 18px; }
+      .flow { overflow: visible; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="shell">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none"><path d="M14 27 32 14l18 13" stroke="#fff0e8" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 27v25h28V27M28 52V39h8v13M14 52h36" stroke="white" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 32h3M37 32h3" stroke="#fff0e8" stroke-width="3" stroke-linecap="round"/></svg>
+        </span>
+        <span><small>Hotel Management</small><strong>Hotel Anmol One</strong></span>
+      </div>
+      <div class="hero-grid">
+        <div><h1>A simple visual guide for the owner</h1><p>Understand orders, bills, payments, purchases, recipes, stock, expenses, staff, and reports without technical language.</p></div>
+        <aside class="hero-card"><b>Best way to use this guide</b><ol><li>Complete First Setup once.</li><li>Follow Daily Customer Flow during service.</li><li>Use the opening and closing checklists every day.</li></ol></aside>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav" aria-label="Guide sections"><div class="shell nav-inner">
+    <a href="#big-picture">Big Picture</a><a href="#setup">First Setup</a><a href="#orders">Orders</a><a href="#payments">Payments</a><a href="#recipes">Recipes</a><a href="#purchases">Purchases</a><a href="#reports">Reports</a><a href="#safety">Safety</a><a href="#routine">Daily Routine</a>
+  </div></nav>
+
+  <main class="shell">
+    <section id="big-picture">
+      <div class="section-head"><span class="number">1</span><div><h2>The complete business flow</h2><p>Every important action connects to another part of the system.</p></div></div>
+      <h3>Customer side</h3>
+      <div class="flow">
+        <div class="flow-card"><span class="icon">🧾</span><b>Create Order</b><span>Select menu items</span></div>
+        <div class="flow-card"><span class="icon">🍳</span><b>Prepare</b><span>Update kitchen status</span></div>
+        <div class="flow-card success"><span class="icon">✓</span><b>Complete</b><span>Recipe stock is used</span></div>
+        <div class="flow-card"><span class="icon">▤</span><b>Generate Bill</b><span>One bill per order</span></div>
+        <div class="flow-card"><span class="icon">₹</span><b>Payment</b><span>Sale updates itself</span></div>
+      </div>
+      <h3>Supplier side</h3>
+      <div class="flow">
+        <div class="flow-card"><span class="icon">♙</span><b>Supplier</b><span>Save contact details</span></div>
+        <div class="flow-card"><span class="icon">🛒</span><b>Purchase</b><span>Add ordered items</span></div>
+        <div class="flow-card warning"><span class="icon">⌛</span><b>Delivery</b><span>Wait for goods</span></div>
+        <div class="flow-card success"><span class="icon">✓</span><b>Mark Received</b><span>Stock increases once</span></div>
+        <div class="flow-card"><span class="icon">↕</span><b>History</b><span>Movement is saved</span></div>
+      </div>
+    </section>
+
+    <section id="setup">
+      <div class="section-head"><span class="number">2</span><div><h2>First-time setup</h2><p>Follow this order before taking real customer orders.</p></div></div>
+      <div class="setup">
+        <div class="setup-card"><b>Hotel Settings</b><span>Name, phone, address, tax, currency, and bill details.</span></div>
+        <div class="setup-card"><b>Suppliers</b><span>Add the businesses that supply your goods.</span></div>
+        <div class="setup-card"><b>Stock Categories</b><span>Grocery, Dairy, Drinks, Packaging, and more.</span></div>
+        <div class="setup-card"><b>Stock Items</b><span>Add quantity, unit, price, and minimum stock.</span></div>
+        <div class="setup-card"><b>Menu Categories</b><span>Breakfast, Starter, Main Course, Drinks, Dessert.</span></div>
+        <div class="setup-card"><b>Menu Recipes</b><span>Tell the system what one serving uses.</span></div>
+        <div class="setup-card"><b>Staff Users</b><span>Create accounts and give only needed access.</span></div>
+        <div class="setup-card"><b>Ready</b><span>Check one test order before daily service.</span></div>
+      </div>
+    </section>
+
+    <section id="orders">
+      <div class="section-head"><span class="number">3</span><div><h2>Daily customer order</h2><p>Use the status that matches what is happening in the kitchen.</p></div></div>
+      <div class="status-track">
+        <div class="status">Pending<small>Order received</small></div>
+        <div class="status">Preparing<small>Kitchen is working</small></div>
+        <div class="status">Ready<small>Food is ready</small></div>
+        <div class="status done">Completed<small>Served; stock deducted</small></div>
+        <div class="status stop">Cancelled<small>Not prepared; no stock used</small></div>
+      </div>
+      <div class="grid-3" style="margin-top:20px">
+        <article class="info"><b>1. Customer</b><p>Choose Dine In, Parcel, or Room. Enter the table or room number.</p></article>
+        <article class="info"><b>2. Food</b><p>Select menu items and enter the correct quantity.</p></article>
+        <article class="info"><b>3. Total</b><p>Check discount, extra charges, final amount, and payment choice.</p></article>
+      </div>
+      <div class="calculation" style="margin-top:20px">
+        <div class="calc-title">Order total example</div>
+        <div class="calc-body">
+          <div class="calc-box">Subtotal<strong>₹1,000</strong></div><span class="operator">−</span>
+          <div class="calc-box">Discount<strong>₹100</strong></div><span class="operator">+</span>
+          <div class="calc-box">Charges ₹50<br><strong>= ₹950</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="payments">
+      <div class="section-head"><span class="number">4</span><div><h2>Billing and payment</h2><p>Always update money from Bill Details so the order, bill, and sale stay equal.</p></div></div>
+      <div class="grid-3">
+        <article class="info green"><b>Paid</b><p>Paid amount equals the final amount. Due is zero.</p></article>
+        <article class="info amber"><b>Partial</b><p>Some money was received. The remaining amount stays due.</p></article>
+        <article class="info red"><b>Not Paid</b><p>No money received yet. The complete amount stays due.</p></article>
+      </div>
+      <h3>When the customer pays later</h3>
+      <div class="flow">
+        <div class="flow-card warning"><span class="icon">₹0</span><b>Not Paid Order</b><span>Save the order normally</span></div>
+        <div class="flow-card"><span class="icon">▤</span><b>Generate Bill</b><span>Due is full amount</span></div>
+        <div class="flow-card"><span class="icon">⌚</span><b>Customer Pays</b><span>Now or another time</span></div>
+        <div class="flow-card success"><span class="icon">✓</span><b>Update Payment</b><span>Order and sale also update</span></div>
+      </div>
+      <div class="table-wrap" style="margin-top:18px"><table><thead><tr><th>Final</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead><tbody>
+        <tr><td>₹1,000</td><td>₹0</td><td>₹1,000</td><td><span class="pill red">Not Paid</span></td></tr>
+        <tr><td>₹1,000</td><td>₹400</td><td>₹600</td><td><span class="pill amber">Partial</span></td></tr>
+        <tr><td>₹1,000</td><td>₹1,000</td><td>₹0</td><td><span class="pill green">Paid</span></td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section id="recipes">
+      <div class="section-head"><span class="number">5</span><div><h2>Recipe and stock calculation</h2><p>The stock unit counts the store quantity. The recipe unit counts what one plate uses.</p></div></div>
+      <div class="grid-2">
+        <article class="info blue"><b>Stock room</b><p>Paneer is stored as <strong>10 Kg</strong>.</p></article>
+        <article class="info amber"><b>One plate recipe</b><p>Paneer Tikka uses <strong>250 Gram</strong>.</p></article>
+      </div>
+      <div class="calculation" style="margin-top:18px">
+        <div class="calc-title">Customer orders 3 plates</div>
+        <div class="calc-body">
+          <div class="calc-box">Per plate<strong>250 g</strong></div><span class="operator">×</span>
+          <div class="calc-box">Plates<strong>3</strong></div><span class="operator">=</span>
+          <div class="calc-box">Stock used<strong>750 g = 0.75 Kg</strong></div>
+        </div>
+      </div>
+      <div class="stock-bars">
+        <div class="stock-row"><b>Before</b><div class="bar"><span style="width:100%"></span></div><span>10.00 Kg</span></div>
+        <div class="stock-row"><b>Used</b><div class="bar"><span style="width:7.5%;background:#f59e0b"></span></div><span>0.75 Kg</span></div>
+        <div class="stock-row"><b>After</b><div class="bar"><span style="width:92.5%;background:#16a34a"></span></div><span>9.25 Kg</span></div>
+      </div>
+      <div class="do-dont" style="margin-top:22px">
+        <article class="do"><b>Correct units</b><ul class="clean"><li>Kg with Gram</li><li>Litre with ml</li><li>Piece with Piece</li></ul></article>
+        <article class="dont"><b>Do not mix</b><ul class="clean"><li>Kg with ml</li><li>Litre with Gram</li><li>Piece with Kg</li></ul></article>
+      </div>
+    </section>
+
+    <section id="purchases">
+      <div class="section-head"><span class="number">6</span><div><h2>Purchase and stock</h2><p>Creating a purchase does not add stock. Receiving the delivery does.</p></div></div>
+      <div class="flow">
+        <div class="flow-card"><span class="icon">♙</span><b>Select Supplier</b><span>Choose saved supplier</span></div>
+        <div class="flow-card"><span class="icon">＋</span><b>Add Items</b><span>Quantity and price</span></div>
+        <div class="flow-card warning"><span class="icon">⌛</span><b>Draft / Ordered</b><span>Stock unchanged</span></div>
+        <div class="flow-card success"><span class="icon">✓</span><b>Received</b><span>Stock added once</span></div>
+      </div>
+      <div class="grid-2" style="margin-top:18px">
+        <article class="info green"><b>Use Purchase</b><p>Normal goods received from a supplier.</p></article>
+        <article class="info blue"><b>Use Manual Stock In</b><p>Opening balance, free goods, or a stock correction.</p></article>
+      </div>
+    </section>
+
+    <section id="reports">
+      <div class="section-head"><span class="number">7</span><div><h2>Reports and owner review</h2><p>Select dates from the calendar, choose extra filters, and press View.</p></div></div>
+      <div class="grid-3">
+        <article class="info"><b>Sales</b><p>Total, paid, due, Cash, UPI, and Card.</p></article>
+        <article class="info"><b>Purchases</b><p>Supplier buying, paid amount, and due amount.</p></article>
+        <article class="info"><b>Expenses</b><p>Daily costs grouped by category.</p></article>
+        <article class="info"><b>Stock</b><p>Value, low stock, stock in, and stock out.</p></article>
+        <article class="info"><b>Payments</b><p>Paid, partial, unpaid, and payment types.</p></article>
+        <article class="info"><b>Orders</b><p>Dine In, Parcel, Room, completed, and cancelled.</p></article>
+      </div>
+      <h3>How information reaches reports</h3>
+      <div class="flow">
+        <div class="flow-card"><span class="icon">▤</span><b>Saved Records</b><span>Orders, bills, purchases</span></div>
+        <div class="flow-card"><span class="icon">📅</span><b>Select Dates</b><span>DD/MM/YY</span></div>
+        <div class="flow-card"><span class="icon">⌕</span><b>View</b><span>Apply selected filters</span></div>
+        <div class="flow-card"><span class="icon">⇩</span><b>Print / Download</b><span>Share the result</span></div>
+      </div>
+    </section>
+
+    <section id="safety">
+      <div class="section-head"><span class="number">8</span><div><h2>Keep business data safe</h2><p>Historical records should normally stay in the system.</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Situation</th><th>Safer action</th></tr></thead><tbody>
+        <tr><td>Supplier is no longer used</td><td>Mark Inactive</td></tr>
+        <tr><td>Menu item is temporarily stopped</td><td>Mark Unavailable</td></tr>
+        <tr><td>Staff member leaves</td><td>Mark User Inactive</td></tr>
+        <tr><td>Order will not be prepared</td><td>Cancel before completion</td></tr>
+        <tr><td>Purchase has already added stock</td><td>Keep the received purchase</td></tr>
+        <tr><td>Item is used in another record</td><td>Read the dependency message first</td></tr>
+      </tbody></table></div>
+      <h3>Five rules that keep totals correct</h3>
+      <div class="rule"><strong>1</strong><span>Received purchases add stock.</span></div>
+      <div class="rule"><strong>2</strong><span>Completed orders use stock.</span></div>
+      <div class="rule"><strong>3</strong><span>Bills create sales.</span></div>
+      <div class="rule"><strong>4</strong><span>Bill payments update orders and sales.</span></div>
+      <div class="rule"><strong>5</strong><span>Saved activity appears in reports.</span></div>
+    </section>
+
+    <section id="routine">
+      <div class="section-head"><span class="number">9</span><div><h2>Daily owner routine</h2><p>A short checklist for opening, service, and closing.</p></div></div>
+      <div class="grid-3">
+        <article class="info"><b>Opening</b><div class="checklist"><div class="check"><span class="box"></span>Check Dashboard</div><div class="check"><span class="box"></span>Review Low Stock</div><div class="check"><span class="box"></span>Receive deliveries</div><div class="check"><span class="box"></span>Check menu availability</div></div></article>
+        <article class="info"><b>During Service</b><div class="checklist"><div class="check"><span class="box"></span>Create correct orders</div><div class="check"><span class="box"></span>Update order status</div><div class="check"><span class="box"></span>Complete served orders</div><div class="check"><span class="box"></span>Update payments</div></div></article>
+        <article class="info"><b>Closing</b><div class="checklist"><div class="check"><span class="box"></span>Check unpaid bills</div><div class="check"><span class="box"></span>Enter expenses</div><div class="check"><span class="box"></span>Review sales report</div><div class="check"><span class="box"></span>Plan next purchases</div></div></article>
+      </div>
+      <h3>Quick answers</h3>
+      <details><summary>Why did stock not decrease after creating an order?</summary><p>Stock decreases only when the order is marked Completed.</p></details>
+      <details><summary>Why did stock not increase after creating a purchase?</summary><p>Stock increases only when the purchase is marked Received.</p></details>
+      <details><summary>Where do I record a payment received later?</summary><p>Open the existing bill and select Update Payment. The order and sale update automatically.</p></details>
+      <details><summary>Why can I not complete an order?</summary><p>Check the insufficient-stock message. Add the missing ingredient or correct the recipe.</p></details>
+      <details><summary>Why is a menu option missing?</summary><p>The logged-in user may not have permission to view that module.</p></details>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="shell"><strong>Hotel Anmol One</strong><br />Visual Owner Guide · Keep this file available for owner and staff training.</div></footer>
+</body>
+</html>
