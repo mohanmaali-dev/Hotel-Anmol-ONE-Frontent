@@ -3,7 +3,7 @@ import { FiArrowLeft, FiEdit2, FiPackage, FiPower, FiTag, FiTrash2 } from 'react
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { deleteMenuItem, getMenuItem, isMenuItemAvailable, updateMenuItem } from '../../api/menuApi.js'
-import { getStockItems } from '../../api/stockApi.js'
+import { getAllStockItems } from '../../api/stockApi.js'
 import ConfirmDeleteModal from '../../components/ConfirmDeleteModal.jsx'
 import DangerZone from '../../components/DangerZone.jsx'
 import Toast from '../../components/Toast.jsx'
@@ -29,10 +29,10 @@ function MenuItemDetails() {
   const loadDetails = useCallback(async () => {
     setLoading(true)
     try {
-      const [itemResult, stockResult] = await Promise.allSettled([getMenuItem(id), getStockItems({ page: 1, limit: 100 })])
+      const [itemResult, stockResult] = await Promise.allSettled([getMenuItem(id), getAllStockItems()])
       if (itemResult.status === 'rejected') throw itemResult.reason
       setItem(itemResult.value.data)
-      if (stockResult.status === 'fulfilled') setStockItems(stockResult.value.data)
+      if (stockResult.status === 'fulfilled') setStockItems(stockResult.value)
     } catch (requestError) { setItem(null); setNotice({ type: 'error', text: requestError.message }) }
     finally { setLoading(false) }
   }, [id])

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { FiArrowLeft, FiClock, FiFilter, FiX } from 'react-icons/fi'
 import { Link, useSearchParams } from 'react-router-dom'
 
-import { getStockHistory, getStockItems } from '../../api/stockApi.js'
+import { getAllStockItems, getStockHistory } from '../../api/stockApi.js'
 import Pagination from '../../components/Pagination.jsx'
 import StockHistoryTable from '../../components/stock/StockHistoryTable.jsx'
 
@@ -20,7 +20,7 @@ function StockHistory() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    getStockItems({ page: 1, limit: 100 }).then((result) => setItems(result.data)).catch(() => {})
+    getAllStockItems().then(setItems).catch(() => {})
   }, [])
 
   const loadHistory = useCallback(async () => {

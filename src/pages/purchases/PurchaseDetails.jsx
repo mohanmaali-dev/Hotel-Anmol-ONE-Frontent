@@ -16,6 +16,7 @@ import { getStockSummary } from '../../api/stockApi.js'
 import { getSupplier } from '../../api/supplierApi.js'
 import ConfirmDeleteModal from '../../components/ConfirmDeleteModal.jsx'
 import DangerZone from '../../components/DangerZone.jsx'
+import PaymentHistoryCard from '../../components/PaymentHistoryCard.jsx'
 import Toast from '../../components/Toast.jsx'
 import PurchasePayment from '../../components/purchases/PurchasePayment.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
@@ -97,13 +98,14 @@ function PurchaseDetails() {
     }
   }
 
-  const handlePaymentUpdate = async () => {
+  const handlePaymentUpdate = async ({ reason } = {}) => {
     if (updating) return
     setUpdating(true)
     setError('')
     try {
-      const result = await updatePurchasePayment(purchase.id, paymentDraft)
-      applyPurchase(result.data)
+      const result = await updatePurchasePayment(purchase.id, { ...paymentDraft, reason })
+      const refreshed = await getPurchase(purchase.id).catch(() => result)
+      applyPurchase(refreshed.data)
       setMessage(result.message)
     } catch (requestError) {
       setError(requestError.message)
@@ -304,6 +306,7 @@ function PurchaseDetails() {
               updating={updating}
               disabled={!can('purchases', 'edit') || purchase.purchaseStatus === 'Cancelled'}
             />
+            <PaymentHistoryCard history={purchase.paymentHistory} />
           </div>
         </div>
 

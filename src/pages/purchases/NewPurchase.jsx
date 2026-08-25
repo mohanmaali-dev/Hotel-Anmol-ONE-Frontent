@@ -3,8 +3,8 @@ import { FiArrowLeft, FiShoppingCart } from 'react-icons/fi'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { createPurchase, getPurchase, updatePurchase, updatePurchasePayment } from '../../api/purchaseApi.js'
-import { getStockItems } from '../../api/stockApi.js'
-import { getSuppliers } from '../../api/supplierApi.js'
+import { getAllStockItems } from '../../api/stockApi.js'
+import { getAllSuppliers } from '../../api/supplierApi.js'
 import PurchaseForm from '../../components/purchases/PurchaseForm.jsx'
 
 function NewPurchase() {
@@ -21,14 +21,14 @@ function NewPurchase() {
 
   useEffect(() => {
     let active = true
-    const requests = [getSuppliers({ page: 1, limit: 100 }), getStockItems({ page: 1, limit: 100 })]
+    const requests = [getAllSuppliers({ status: 'Active' }), getAllStockItems({ active: true })]
     if (editId) requests.push(getPurchase(editId))
 
     Promise.all(requests)
       .then(([supplierResult, stockResult, purchaseResult]) => {
         if (!active) return
-        setSuppliers(supplierResult.data)
-        setStockItems(stockResult.data)
+        setSuppliers(supplierResult)
+        setStockItems(stockResult)
         if (purchaseResult) setInitialPurchase(purchaseResult.data)
       })
       .catch((requestError) => { if (active) setError(requestError.message) })
@@ -69,7 +69,7 @@ function NewPurchase() {
 
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8"><div className="page-content">
-      <div className="mb-6"><Link to={initialPurchase ? `/purchases/${initialPurchase.id}` : '/purchases'} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-primary-dark"><FiArrowLeft /> Back to Purchases</Link><h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">{initialPurchase ? 'Edit Purchase' : 'Create New Purchase'}</h2><p className="mt-1 text-sm text-slate-500">{initialPurchase ? 'Update supplier, items, or payment information.' : 'Enter supplier, item, and payment details.'}</p></div>
+      <div className="mb-6"><Link to={initialPurchase ? `/purchases/${initialPurchase.id}` : '/purchases'} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-primary-dark"><FiArrowLeft /> Back to Purchases</Link><h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">{initialPurchase ? 'Edit Purchase' : 'Create New Purchase'}</h2><p className="mt-1 text-sm text-slate-500">{initialPurchase ? 'Update supplier and item information. Payment can be changed from Purchase Details.' : 'Enter supplier, item, and payment details.'}</p></div>
       <PurchaseForm initialPurchase={initialPurchase} preselectedSupplierId={preselectedSupplierId} suppliers={suppliers} availableItems={stockItems} onSave={handleSave} submitting={submitting} apiError={error} onClearError={() => setError('')} />
     </div></main>
   )

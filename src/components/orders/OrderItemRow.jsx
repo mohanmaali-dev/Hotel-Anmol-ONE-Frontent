@@ -19,7 +19,7 @@ function OrderItemRow({ item, menuItems, onChange, onRemove, canRemove }) {
           <option value="">Select menu item</option>
           {menuItems.map((menuItem) => (
             <option key={menuItem.id} value={menuItem.id}>
-              {menuItem.name}{menuItem.servingSize ? ` (${menuItem.servingSize})` : ''} — ₹{menuItem.rate}
+              {menuItem.name}{menuItem.servingSize ? ` (${menuItem.servingSize})` : ''} — {formatCurrency(menuItem.rate)}
             </option>
           ))}
         </select>

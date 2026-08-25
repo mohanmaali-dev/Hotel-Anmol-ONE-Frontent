@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 import OrderItemRow from './OrderItemRow.jsx'
 import OrderSummary from './OrderSummary.jsx'
+import { useSettings } from '../../context/SettingsContext.jsx'
 
 const inputClass =
   'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10'
@@ -23,16 +24,20 @@ const areaOptions = {
 }
 
 function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onClearError }) {
-  const [form, setForm] = useState({
-    orderType: 'Dine In',
-    areaType: 'Indoor',
+  const { settings } = useSettings()
+  const defaultOrderType = areaOptions[settings.order.defaultOrderType]
+    ? settings.order.defaultOrderType
+    : 'Dine In'
+  const [form, setForm] = useState(() => ({
+    orderType: defaultOrderType,
+    areaType: areaOptions[defaultOrderType][0],
     areaRoomNo: '',
     customerName: '',
     discount: 0,
-    additionalCharges: 0,
+    additionalCharges: Number(settings.billing.defaultAdditionalCharge || 0),
     paymentType: 'Cash',
     paymentStatus: 'Paid',
-  })
+  }))
   const [items, setItems] = useState([createRow()])
   const [validationError, setValidationError] = useState('')
   const error = validationError || apiError
@@ -41,7 +46,9 @@ function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onCle
     () => items.reduce((total, item) => total + Number(item.quantity) * Number(item.rate), 0),
     [items],
   )
-  const discountAmount = Math.max(0, Number(form.discount || 0))
+  const discountAmount = settings.billing.allowDiscount
+    ? Math.max(0, Number(form.discount || 0))
+    : 0
   const additionalChargesAmount = Math.max(0, Number(form.additionalCharges || 0))
   const finalAmount = Math.max(0, subtotal - discountAmount + additionalChargesAmount)
 
@@ -208,7 +215,7 @@ function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onCle
           </div>
         </section>
 
-        <OrderSummary subtotal={subtotal} discount={form.discount} additionalCharges={form.additionalCharges} finalAmount={finalAmount} onChange={updateForm} />
+        <OrderSummary subtotal={subtotal} discount={form.discount} additionalCharges={form.additionalCharges} finalAmount={finalAmount} allowDiscount={settings.billing.allowDiscount} onChange={updateForm} />
       </div>
 
       <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">

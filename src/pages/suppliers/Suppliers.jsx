@@ -31,7 +31,7 @@ function Suppliers() {
     setError('')
     try {
       const search = filters.phone.trim() || filters.name.trim()
-      const result = await getSuppliers({ page, limit: pageSize, ...(search ? { search } : {}), ...(filters.status ? { status: filters.status } : {}) }, true)
+      const result = await getSuppliers({ page, limit: pageSize, ...(search ? { search } : {}), ...(filters.status ? { status: filters.status } : {}) })
       setSuppliers(result.data)
       setPagination(result.pagination || { page, limit: pageSize, total: result.data.length, pages: 1 })
     } catch (requestError) {

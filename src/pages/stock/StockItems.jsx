@@ -3,7 +3,7 @@ import { FiArrowLeft, FiPackage } from 'react-icons/fi'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { createStockItem, getStockCategories, getStockItem, updateStockItem } from '../../api/stockApi.js'
-import { getSuppliers } from '../../api/supplierApi.js'
+import { getAllSuppliers } from '../../api/supplierApi.js'
 import StockItemForm from '../../components/stock/StockItemForm.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 
@@ -21,13 +21,13 @@ function StockItems() {
 
   useEffect(() => {
     let active = true
-    const requests = [getSuppliers({ page: 1, limit: 100 }), getStockCategories()]
+    const requests = [getAllSuppliers({ status: 'Active' }), getStockCategories()]
     if (editId) requests.push(getStockItem(editId))
 
     Promise.allSettled(requests)
       .then(([supplierResult, categoryResult, itemResult]) => {
         if (!active) return
-        if (supplierResult.status === 'fulfilled') setSuppliers(supplierResult.value.data)
+        if (supplierResult.status === 'fulfilled') setSuppliers(supplierResult.value)
         if (categoryResult.status === 'fulfilled') setCategories(categoryResult.value.data)
         if (categoryResult.status === 'rejected') setError(categoryResult.reason.message)
         if (itemResult?.status === 'fulfilled') setInitialItem(itemResult.value.data)

@@ -1,4 +1,5 @@
 import api from './axios.js'
+import { fetchAllPages } from './fetchAllPages.js'
 
 export const normalizeSupplier = (supplier) => ({
   ...supplier,
@@ -6,6 +7,11 @@ export const normalizeSupplier = (supplier) => ({
   name: supplier?.supplierName || supplier?.name,
   gstTaxNo: supplier?.gstTaxNumber ?? supplier?.gstTaxNo ?? '',
   isActive: supplier?.status ? supplier.status === 'Active' : supplier?.isActive !== false,
+  totalPurchases: Number(supplier?.purchaseSummary?.totalPurchases || supplier?.totalPurchases || 0),
+  totalPurchaseAmount: Number(supplier?.purchaseSummary?.totalPurchaseAmount || supplier?.totalPurchaseAmount || 0),
+  totalPaid: Number(supplier?.purchaseSummary?.totalPaid || supplier?.totalPaid || 0),
+  totalDue: Number(supplier?.purchaseSummary?.totalDue || supplier?.totalDue || 0),
+  lastPurchaseDate: supplier?.purchaseSummary?.lastPurchaseDate || supplier?.lastPurchaseDate || null,
 })
 
 export const normalizeSupplierDetails = (payload) => {
@@ -25,24 +31,14 @@ export const normalizeSupplierDetails = (payload) => {
   }
 }
 
-export const getSuppliers = async (params = {}, includeMetrics = false) => {
+export const getSuppliers = async (params = {}) => {
   const response = await api.get('/suppliers', { params })
   const suppliers = (response.data.data || []).map(normalizeSupplier)
 
-  if (!includeMetrics) return { ...response.data, data: suppliers }
-
-  const detailed = await Promise.all(
-    suppliers.map(async (supplier) => {
-      try {
-        const result = await getSupplier(supplier.id, 1)
-        return result.data
-      } catch {
-        return { ...supplier, totalPurchases: 0, totalPaid: 0, totalDue: 0 }
-      }
-    }),
-  )
-  return { ...response.data, data: detailed }
+  return { ...response.data, data: suppliers }
 }
+
+export const getAllSuppliers = (params = {}) => fetchAllPages(getSuppliers, params)
 
 export const getSupplier = async (id, purchaseLimit = 10) => {
   const response = await api.get(`/suppliers/${id}`, { params: { purchaseLimit } })

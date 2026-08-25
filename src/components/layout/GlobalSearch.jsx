@@ -2,15 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { FiBookOpen, FiCreditCard, FiDollarSign, FiFileText, FiPackage, FiSearch, FiShoppingBag, FiShoppingCart, FiTruck, FiUsers } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
-import { getBills } from '../../api/billingApi.js'
-import { getExpenses } from '../../api/expenseApi.js'
-import { getMenuItems } from '../../api/menuApi.js'
-import { getOrders } from '../../api/orderApi.js'
-import { getPurchases } from '../../api/purchaseApi.js'
-import { getSales } from '../../api/salesApi.js'
-import { getStockItems } from '../../api/stockApi.js'
-import { getSuppliers } from '../../api/supplierApi.js'
-import { getUsers } from '../../api/userApi.js'
+import { searchAll } from '../../api/searchApi.js'
 import { useAuth } from '../../context/AuthContext.jsx'
 
 const sourceStyles = {
@@ -24,6 +16,9 @@ const sourceStyles = {
   Expenses: 'bg-rose-50 text-rose-700',
   Users: 'bg-slate-100 text-slate-700',
 }
+
+const sourceIcons = { Orders: FiShoppingBag, Bills: FiFileText, Sales: FiCreditCard, Purchases: FiShoppingCart, Stock: FiPackage, Menu: FiBookOpen, Suppliers: FiTruck, Expenses: FiDollarSign, Users: FiUsers }
+const resultPath = ({ source, id }) => ({ Orders: `/orders/${id}`, Bills: `/billing/${id}`, Sales: `/sales/${id}`, Purchases: `/purchases/${id}`, Stock: `/stock/history?item=${id}`, Menu: `/menu/items/${id}`, Suppliers: `/suppliers/${id}`, Expenses: `/expenses/${id}`, Users: `/users/${id}` })[source]
 
 function GlobalSearch() {
   const navigate = useNavigate()
@@ -49,33 +44,18 @@ function GlobalSearch() {
 
   const searchRecords = useCallback(async (searchText) => {
     const requestId = ++requestRef.current
-    const sources = [
-      canOrders && { label: 'Orders', Icon: FiShoppingBag, request: () => getOrders({ search: searchText, page: 1, limit: 4 }), map: (item) => ({ title: item.orderNo, detail: `${item.customerName || 'Walk-in customer'} · ${item.orderType}`, path: `/orders/${item.id}` }) },
-      canBilling && { label: 'Bills', Icon: FiFileText, request: () => getBills({ search: searchText, page: 1, limit: 4 }), map: (item) => ({ title: item.billNo, detail: `Order ${item.orderNo} · ${item.customerName || 'Walk-in customer'}`, path: `/billing/${item.id}` }) },
-      canSales && { label: 'Sales', Icon: FiCreditCard, request: () => getSales({ search: searchText, page: 1, limit: 4 }), map: (item) => ({ title: item.saleNo, detail: `Bill ${item.billNo} · ${item.customerName || 'Walk-in customer'}`, path: `/sales/${item.id}` }) },
-      canPurchases && { label: 'Purchases', Icon: FiShoppingCart, request: () => getPurchases({ search: searchText, page: 1, limit: 4 }), map: (item) => ({ title: item.purchaseNo, detail: item.supplierName || 'Supplier purchase', path: `/purchases/${item.id}` }) },
-      canStock && { label: 'Stock', Icon: FiPackage, request: () => getStockItems({ search: searchText, page: 1, limit: 4 }), map: (item) => ({ title: item.name, detail: `${item.currentQuantity} ${item.unit} available`, path: `/stock/history?item=${item.id}` }) },
-      canMenu && { label: 'Menu', Icon: FiBookOpen, request: () => getMenuItems({ search: searchText, page: 1, limit: 4 }), map: (item) => ({ title: item.name, detail: item.category?.name || 'Menu item', path: `/menu/items/${item.id}` }) },
-      canSuppliers && { label: 'Suppliers', Icon: FiTruck, request: () => getSuppliers({ search: searchText, page: 1, limit: 4 }), map: (item) => ({ title: item.name, detail: item.phone || item.contactPerson || 'Supplier', path: `/suppliers/${item.id}` }) },
-      canExpenses && { label: 'Expenses', Icon: FiDollarSign, request: () => getExpenses({ search: searchText, page: 1, limit: 4 }), map: (item) => ({ title: item.expenseNo, detail: item.description || item.category, path: `/expenses/${item.id}` }) },
-      canUsers && { label: 'Users', Icon: FiUsers, request: () => getUsers({ search: searchText, page: 1, limit: 4 }), map: (item) => ({ title: item.fullName, detail: `${item.username} · ${item.role}`, path: `/users/${item.id}` }) },
-    ].filter(Boolean)
-
     setLoading(true)
     setError('')
-    const settled = await Promise.allSettled(sources.map((source) => source.request()))
-    if (requestId !== requestRef.current) return
-
-    const nextResults = settled.flatMap((result, index) => {
-      if (result.status !== 'fulfilled') return []
-      const source = sources[index]
-      return (result.value.data || []).slice(0, 4).map((item) => ({ ...source.map(item), source: source.label, Icon: source.Icon }))
-    }).slice(0, 16)
-
-    setResults(nextResults)
-    setError(settled.every((result) => result.status === 'rejected') ? 'Search is unavailable right now.' : '')
-    setLoading(false)
-  }, [canBilling, canExpenses, canMenu, canOrders, canPurchases, canSales, canStock, canSuppliers, canUsers])
+    try {
+      const records = await searchAll(searchText)
+      if (requestId !== requestRef.current) return
+      setResults(records.map((record) => ({ ...record, path: resultPath(record), Icon: sourceIcons[record.source] || FiSearch })))
+    } catch {
+      if (requestId === requestRef.current) setError('Search is unavailable right now.')
+    } finally {
+      if (requestId === requestRef.current) setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     const searchText = query.trim()

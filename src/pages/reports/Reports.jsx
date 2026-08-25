@@ -3,6 +3,7 @@ import { FiBox, FiCreditCard, FiDollarSign, FiFileText, FiShoppingBag, FiShoppin
 
 import { exportSpreadsheet } from '../../api/excelApi.js'
 import { getReport } from '../../api/reportsApi.js'
+import Pagination from '../../components/Pagination.jsx'
 import Toast from '../../components/Toast.jsx'
 import ExpenseReport from '../../components/reports/ExpenseReport.jsx'
 import OrderReport from '../../components/reports/OrderReport.jsx'
@@ -13,6 +14,7 @@ import SalesReport from '../../components/reports/SalesReport.jsx'
 import StockReport from '../../components/reports/StockReport.jsx'
 
 const emptyFilters = { fromDate: '', toDate: '', paymentType: '', orderType: '', paymentStatus: '', status: '', supplier: '', category: '' }
+const pageSize = 20
 
 const reportTabs = [
   { id: 'sales', label: 'Sales', icon: FiTrendingUp, description: 'Sales, paid amounts, and money still due.' },
@@ -28,6 +30,8 @@ function Reports() {
   const [draftFilters, setDraftFilters] = useState(emptyFilters)
   const [appliedFilters, setAppliedFilters] = useState(emptyFilters)
   const [report, setReport] = useState({ summary: {}, data: [], filters: {} })
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({ page: 1, limit: pageSize, total: 0, pages: 0 })
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
   const activeTab = reportTabs.find((tab) => tab.id === activeReport) || reportTabs[0]
@@ -35,9 +39,12 @@ function Reports() {
   useEffect(() => {
     let active = true
     setLoading(true)
-    getReport(activeReport, appliedFilters)
+    getReport(activeReport, { ...appliedFilters, page, limit: pageSize })
       .then((result) => {
-        if (active) setReport({ summary: result.summary || {}, data: result.data || [], filters: result.filters || {} })
+        if (active) {
+          setReport({ summary: result.summary || {}, data: result.data || [], filters: result.filters || {} })
+          setPagination(result.pagination || { page: 1, limit: pageSize, total: result.data?.length || 0, pages: result.data?.length ? 1 : 0 })
+        }
       })
       .catch((requestError) => {
         if (active) {
@@ -47,10 +54,11 @@ function Reports() {
       })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [activeReport, appliedFilters])
+  }, [activeReport, appliedFilters, page])
 
   const selectReport = (reportId) => {
     setActiveReport(reportId)
+    setPage(1)
     setDraftFilters({ ...emptyFilters })
     setAppliedFilters({ ...emptyFilters })
     setMessage(null)
@@ -64,12 +72,14 @@ function Reports() {
       return
     }
     setAppliedFilters({ ...draftFilters })
+    setPage(1)
     setMessage({ type: 'success', text: 'Report updated.' })
   }
 
   const resetFilters = () => {
     setDraftFilters({ ...emptyFilters })
     setAppliedFilters({ ...emptyFilters })
+    setPage(1)
     setMessage({ type: 'success', text: 'Filters cleared.' })
   }
 
@@ -133,6 +143,7 @@ function Reports() {
             {activeReport === 'stock' && <StockReport {...commonProps} />}
             {activeReport === 'payments' && <PaymentReport {...commonProps} />}
             {activeReport === 'orders' && <OrderReport {...commonProps} />}
+            {pagination.pages > 1 && activeReport !== 'payments' && <div className="print:hidden"><Pagination pagination={pagination} onPageChange={setPage} label="report rows" /></div>}
           </>
         )}
       </div>

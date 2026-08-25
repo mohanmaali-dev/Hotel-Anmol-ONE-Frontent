@@ -57,7 +57,7 @@ function BillingTable({ bills, total, loading }) {
                   <td className="whitespace-nowrap px-4 py-4 font-medium text-slate-700">
                     {bill.orderId ? <Link to={`/orders/${bill.orderId}`} className="record-link" title="View related order">#{bill.orderNo}</Link> : `#${bill.orderNo}`}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-4">{formatOrderDate(bill.date)}</td>
+                  <td className="whitespace-nowrap px-4 py-4">{formatOrderDate(bill.date, true)}</td>
                   <td className="whitespace-nowrap px-4 py-4 font-medium text-slate-700">
                     {bill.customerName}
                   </td>

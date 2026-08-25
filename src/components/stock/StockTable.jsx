@@ -1,4 +1,4 @@
-import { FiArrowDown, FiArrowUp, FiClock, FiEdit2, FiPackage, FiTrash2 } from 'react-icons/fi'
+import { FiArrowDown, FiArrowUp, FiClock, FiEdit2, FiPackage, FiPower, FiTrash2 } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 
 import { formatCurrency } from '../../utils/orderFormatters.js'
@@ -9,7 +9,7 @@ const statusClasses = {
   'Out of Stock': 'bg-rose-50 text-rose-700',
 }
 
-function StockTable({ items, total, loading, canEdit, canDelete, onStockIn, onStockOut, onDelete }) {
+function StockTable({ items, total, loading, canEdit, canDelete, onStockIn, onStockOut, onToggleActive, onDelete }) {
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40">
       <div className="border-b border-slate-100 px-5 py-4">
@@ -44,6 +44,7 @@ function StockTable({ items, total, loading, canEdit, canDelete, onStockIn, onSt
                     <Link to={`/stock/history?item=${item.id}`} className="record-link" title="View stock history">
                       {item.name}
                     </Link>
+                    {!item.isActive && <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">Inactive</span>}
                   </td>
                   <td className="whitespace-nowrap px-4 py-4">{item.category}</td>
                   <td className="px-4 py-4 text-right font-bold text-slate-800">
@@ -62,7 +63,7 @@ function StockTable({ items, total, loading, canEdit, canDelete, onStockIn, onSt
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-center gap-1.5">
-                      {canEdit && <button
+                      {canEdit && item.isActive && <button
                         type="button"
                         onClick={() => onStockIn(item.id)}
                         aria-label={`Stock in ${item.name}`}
@@ -71,7 +72,7 @@ function StockTable({ items, total, loading, canEdit, canDelete, onStockIn, onSt
                       >
                         <FiArrowDown />
                       </button>}
-                      {canEdit && <button
+                      {canEdit && item.isActive && <button
                         type="button"
                         onClick={() => onStockOut(item.id)}
                         aria-label={`Stock out ${item.name}`}
@@ -97,6 +98,7 @@ function StockTable({ items, total, loading, canEdit, canDelete, onStockIn, onSt
                       >
                         <FiEdit2 />
                       </Link>}
+                      {canEdit && <button type="button" onClick={() => onToggleActive(item)} aria-label={`${item.isActive ? 'Deactivate' : 'Activate'} ${item.name}`} title={item.isActive ? 'Make Inactive' : 'Make Active'} className={`grid size-8 place-items-center rounded-lg border ${item.isActive ? 'border-slate-200 text-slate-500 hover:bg-slate-50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'}`}><FiPower /></button>}
                     </div>
                   </td>
                 </tr>

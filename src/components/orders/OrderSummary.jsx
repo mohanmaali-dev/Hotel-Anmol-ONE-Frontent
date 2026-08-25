@@ -1,9 +1,9 @@
-import { formatCurrency } from '../../utils/orderFormatters.js'
+import { formatCurrency, getCurrencySymbol } from '../../utils/orderFormatters.js'
 
 const inputClass =
   'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-right text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10'
 
-function OrderSummary({ subtotal, discount, additionalCharges, finalAmount, onChange }) {
+function OrderSummary({ subtotal, discount, additionalCharges, finalAmount, allowDiscount = true, onChange }) {
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40">
       <h2 className="font-bold text-slate-900">Billing Summary</h2>
@@ -18,21 +18,23 @@ function OrderSummary({ subtotal, discount, additionalCharges, finalAmount, onCh
         <label className="grid grid-cols-[1fr_130px] items-center gap-4 text-sm">
           <span className="text-slate-500">Discount</span>
           <span className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{getCurrencySymbol()}</span>
             <input
               type="number"
               min="0"
-              value={discount}
+              value={allowDiscount ? discount : 0}
+              disabled={!allowDiscount}
               onChange={(event) => onChange('discount', event.target.value)}
-              className={`${inputClass} pl-7`}
+              className={`${inputClass} pl-7 disabled:bg-slate-50 disabled:text-slate-400`}
             />
           </span>
         </label>
+        {!allowDiscount && <p className="-mt-2 text-right text-xs text-slate-400">Discount is disabled in Settings.</p>}
 
         <label className="grid grid-cols-[1fr_130px] items-center gap-4 text-sm">
           <span className="text-slate-500">Additional Charges</span>
           <span className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{getCurrencySymbol()}</span>
             <input
               type="number"
               min="0"

@@ -1,4 +1,5 @@
 import api from './axios.js'
+import { fetchAllPages } from './fetchAllPages.js'
 
 export const normalizeMenuCategory = (category) => ({
   ...category,
@@ -42,16 +43,7 @@ export const getMenuCategories = async (params = {}) => {
 }
 
 export const getAllMenuCategories = async (params = {}) => {
-  const categories = []
-  let page = 1
-  let pages = 1
-  do {
-    const result = await getMenuCategories({ ...params, page, limit: 100 })
-    categories.push(...result.data)
-    pages = result.pagination?.pages || 1
-    page += 1
-  } while (page <= pages)
-  return categories
+  return fetchAllPages(getMenuCategories, params)
 }
 
 export const createMenuCategory = async (category) => {
@@ -126,8 +118,8 @@ export const deleteMenuItem = async (id) => {
 }
 
 export const getAvailableMenuItemsForOrder = async () => {
-  const result = await getMenuItems({ availability: 'Available', page: 1, limit: 100 })
-  return result.data
+  const items = await fetchAllPages(getMenuItems, { availability: 'Available' })
+  return items
     .filter((item) => isMenuItemAvailable(item))
     .map((item) => ({ ...item, rate: Number(item.sellingPrice || 0) }))
 }

@@ -1,4 +1,5 @@
 import api from './axios.js'
+import { fetchAllPages } from './fetchAllPages.js'
 
 export const normalizeStockCategory = (category) => ({
   ...category,
@@ -12,6 +13,7 @@ export const normalizeStockItem = (item) => ({
   name: item?.itemName || item?.name,
   unit: String(item?.unit || '').toLowerCase(),
   stockValue: Number(item?.stockValue ?? Number(item?.currentQuantity || 0) * Number(item?.purchasePrice || 0)),
+  isActive: item?.isActive !== false,
 })
 
 export const normalizeStockMovement = (movement) => ({
@@ -21,6 +23,7 @@ export const normalizeStockMovement = (movement) => ({
   supplierId: movement?.supplierId?._id || movement?.supplierId || '',
   supplierName: movement?.supplierId?.name || movement?.supplierName || '',
   purchaseId: movement?.purchaseId?._id || movement?.purchaseId || '',
+  orderId: movement?.orderId?._id || movement?.orderId || '',
   type: movement?.type === 'IN' ? 'Stock In' : 'Stock Out',
   previousStock: movement?.previousQuantity ?? movement?.previousStock,
   newStock: movement?.newQuantity ?? movement?.newStock,
@@ -67,6 +70,8 @@ export const getStockItems = async (params = {}) => {
   }
 }
 
+export const getAllStockItems = (params = {}) => fetchAllPages(getStockItems, params)
+
 export const getStockItem = async (id) => {
   const response = await api.get(`/stock/items/${id}`)
   return { ...response.data, data: normalizeStockItem(response.data.data) }
@@ -81,19 +86,21 @@ export const createStockItem = async (item) => {
     purchasePrice: Number(item.purchasePrice || 0),
     minimumStock: Number(item.minimumStock || 0),
     supplierId: item.supplierId || null,
+    ...(item.isActive !== undefined ? { isActive: Boolean(item.isActive) } : {}),
   })
   return { ...response.data, data: normalizeStockItem(response.data.data) }
 }
 
 export const updateStockItem = async (id, item) => {
-  const response = await api.put(`/stock/items/${id}`, {
-    itemName: item.name || item.itemName,
-    category: item.category,
-    unit: item.unit,
-    purchasePrice: Number(item.purchasePrice || 0),
-    minimumStock: Number(item.minimumStock || 0),
-    supplierId: item.supplierId || null,
-  })
+  const payload = {}
+  if (item.name !== undefined || item.itemName !== undefined) payload.itemName = item.name ?? item.itemName
+  if (item.category !== undefined) payload.category = item.category
+  if (item.unit !== undefined) payload.unit = item.unit
+  if (item.purchasePrice !== undefined) payload.purchasePrice = Number(item.purchasePrice)
+  if (item.minimumStock !== undefined) payload.minimumStock = Number(item.minimumStock)
+  if (item.supplierId !== undefined) payload.supplierId = item.supplierId || null
+  if (item.isActive !== undefined) payload.isActive = Boolean(item.isActive)
+  const response = await api.put(`/stock/items/${id}`, payload)
   return { ...response.data, data: normalizeStockItem(response.data.data) }
 }
 

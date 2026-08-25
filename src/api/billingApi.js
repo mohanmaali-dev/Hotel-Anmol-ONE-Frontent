@@ -52,6 +52,7 @@ export const updateBillPayment = async (id, payment) => {
   const response = await api.put(`/bills/${id}/payment`, {
     paidAmount: Number(payment.paidAmount),
     paymentType: payment.paymentType,
+    reason: payment.reason,
   })
   return { ...response.data, data: normalizeBill(response.data.data) }
 }

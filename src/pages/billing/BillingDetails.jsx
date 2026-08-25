@@ -7,6 +7,7 @@ import BillDetails from '../../components/billing/BillDetails.jsx'
 import BillSummary from '../../components/billing/BillSummary.jsx'
 import PaymentSection from '../../components/billing/PaymentSection.jsx'
 import PrintableBill from '../../components/billing/PrintableBill.jsx'
+import PaymentHistoryCard from '../../components/PaymentHistoryCard.jsx'
 import Toast from '../../components/Toast.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { useSettings } from '../../context/SettingsContext.jsx'
@@ -106,7 +107,7 @@ function BillingDetails() {
 
         <div className="grid grid-cols-1 gap-6 print:hidden xl:grid-cols-[minmax(0,2fr)_380px]">
           <BillDetails bill={bill} restaurantName={settings.restaurant.name} currency={settings.restaurant.currency} />
-          <div className="space-y-6"><BillSummary bill={bill} currency={settings.restaurant.currency} /><PaymentSection bill={bill} onUpdate={handlePaymentUpdate} updating={updating} canEdit={can('billing', 'edit')} /></div>
+          <div className="space-y-6"><BillSummary bill={bill} currency={settings.restaurant.currency} /><PaymentSection bill={bill} onUpdate={handlePaymentUpdate} updating={updating} canEdit={can('billing', 'edit')} /><PaymentHistoryCard history={bill.paymentHistory} /></div>
         </div>
         <PrintableBill bill={bill} settings={settings} />
       </div>

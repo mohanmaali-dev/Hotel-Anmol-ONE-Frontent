@@ -3,6 +3,8 @@ import { Outlet, useLocation } from 'react-router-dom'
 
 import Navbar from './Navbar.jsx'
 import Sidebar from './Sidebar.jsx'
+import { useSettings } from '../../context/SettingsContext.jsx'
+import { setDefaultCurrency } from '../../utils/orderFormatters.js'
 
 function getPageDetails(pathname) {
   if (pathname === '/excel') {
@@ -128,6 +130,8 @@ function AppLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const { pathname } = useLocation()
   const page = getPageDetails(pathname)
+  const { settings } = useSettings()
+  setDefaultCurrency(settings.restaurant.currency)
 
   return (
     <div className="min-h-screen bg-cream text-slate-800">

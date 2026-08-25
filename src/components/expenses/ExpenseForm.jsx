@@ -3,6 +3,7 @@ import { FiAlertCircle, FiSave, FiX } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 
 import { expenseCategories } from '../../data/expenseOptions.js'
+import { getCurrencySymbol } from '../../utils/orderFormatters.js'
 
 const inputClass = 'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10'
 
@@ -53,7 +54,7 @@ function ExpenseForm({ initialExpense, onSave, submitting = false, apiError = ''
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <label><span className="mb-1.5 block text-sm font-semibold text-slate-700">Date</span><input type="date" value={form.date} onChange={(event) => updateForm('date', event.target.value)} className={inputClass} /></label>
           <label><span className="mb-1.5 block text-sm font-semibold text-slate-700">Expense Category</span><select value={form.category} onChange={(event) => updateForm('category', event.target.value)} className={inputClass}>{expenseCategories.map((category) => <option key={category}>{category}</option>)}</select></label>
-          <label><span className="mb-1.5 block text-sm font-semibold text-slate-700">Amount</span><span className="relative block"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span><input type="number" min="0" value={form.amount} onChange={(event) => updateForm('amount', event.target.value)} className={`${inputClass} pl-8`} /></span></label>
+          <label><span className="mb-1.5 block text-sm font-semibold text-slate-700">Amount</span><span className="relative block"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{getCurrencySymbol()}</span><input type="number" min="0" value={form.amount} onChange={(event) => updateForm('amount', event.target.value)} className={`${inputClass} pl-8`} /></span></label>
 
           <fieldset className="sm:col-span-2 xl:col-span-3">
             <legend className="mb-2 text-sm font-semibold text-slate-700">Payment Type</legend>

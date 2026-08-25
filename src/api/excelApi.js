@@ -4,7 +4,7 @@ import { getOrders } from './orderApi.js'
 import { getPurchases } from './purchaseApi.js'
 import { getReport } from './reportsApi.js'
 import { getSales } from './salesApi.js'
-import { createStockItem, getStockItems } from './stockApi.js'
+import { createStockCategory, createStockItem, getStockCategories, getStockItems } from './stockApi.js'
 import { createSupplier, getSuppliers } from './supplierApi.js'
 import { writeWorkbook } from '../utils/excelHelpers.js'
 
@@ -25,15 +25,32 @@ const fetchAll = async (getter, params = {}) => {
   return rows
 }
 
+const fetchCompleteReport = async (type, filters) => {
+  const rows = []
+  let page = 1
+  let pages = 1
+  let report
+  do {
+    report = await getReport(type, { ...filters, page, limit: 100 })
+    rows.push(...(report.data || []))
+    pages = report.pagination?.pages || 1
+    page += 1
+  } while (page <= pages)
+  return { ...report, data: rows }
+}
+
 export const importSpreadsheetRows = async (typeId, rows) => {
   const result = { totalRows: rows.length, imported: 0, skipped: 0, failed: 0, createdCategories: 0, errors: [] }
   let existing = new Set()
   let categories = new Map()
 
-  if (typeId === 'stock-items') existing = new Set((await fetchAll(getStockItems)).map((item) => lower(item.name)))
+  if (typeId === 'stock-items') {
+    existing = new Set((await fetchAll(getStockItems)).map((item) => lower(item.name)))
+    categories = new Map((await getStockCategories()).data.map((category) => [lower(category.name), category]))
+  }
   if (typeId === 'menu-items') {
     existing = new Set((await fetchAll(getMenuItems)).map((item) => lower(item.name)))
-    categories = new Map((await getAllMenuCategories()).map((category) => [lower(category.name), category.id]))
+    categories = new Map((await getAllMenuCategories()).map((category) => [lower(category.name), category]))
   }
   if (typeId === 'suppliers') existing = new Set((await fetchAll(getSuppliers)).flatMap((supplier) => [lower(supplier.phone), lower(supplier.email)].filter(Boolean)))
 
@@ -42,21 +59,33 @@ export const importSpreadsheetRows = async (typeId, rows) => {
       if (typeId === 'stock-items') {
         const key = lower(row['Item Name'])
         if (existing.has(key)) { result.skipped += 1; result.errors.push({ row: row.__row, message: 'Item already exists.' }); continue }
+        const categoryName = String(row.Category || '').trim()
+        let category = categories.get(lower(categoryName))
+        if (!category) {
+          const categoryResult = await createStockCategory({ name: categoryName, isActive: true })
+          category = categoryResult.data
+          categories.set(lower(categoryName), category)
+          result.createdCategories += 1
+        } else if (!category.isActive) {
+          throw new Error(`Category "${categoryName}" is inactive.`)
+        }
         await createStockItem({ name: row['Item Name'], category: row.Category, unit: row.Unit, openingQuantity: number(row['Opening Stock']), purchasePrice: number(row['Purchase Price']), minimumStock: number(row['Minimum Stock']) })
         existing.add(key)
       } else if (typeId === 'menu-items') {
         const key = lower(row['Item Name'])
         if (existing.has(key)) { result.skipped += 1; result.errors.push({ row: row.__row, message: 'Menu item already exists.' }); continue }
         const categoryName = String(row.Category || '').trim()
-        let categoryId = categories.get(lower(categoryName))
-        if (!categoryId) {
+        let category = categories.get(lower(categoryName))
+        if (!category) {
           const categoryResult = await createMenuCategory({ name: categoryName, description: '', isActive: true })
-          categoryId = categoryResult.data.id
-          categories.set(lower(categoryName), categoryId)
+          category = categoryResult.data
+          categories.set(lower(categoryName), category)
           result.createdCategories += 1
+        } else if (!category.isActive) {
+          throw new Error(`Category "${categoryName}" is inactive.`)
         }
         const availability = lower(row.Availability) === 'available' ? 'Available' : 'Unavailable'
-        await createMenuItem({ name: row['Item Name'], categoryId, servingSize: row['Serving Size'], sellingPrice: number(row['Selling Price']), availability, trackStock: yes(row['Track Stock']), ingredients: [] })
+        await createMenuItem({ name: row['Item Name'], categoryId: category.id, servingSize: row['Serving Size'], sellingPrice: number(row['Selling Price']), availability, trackStock: yes(row['Track Stock']), ingredients: [] })
         existing.add(key)
       } else if (typeId === 'suppliers') {
         const keys = [lower(row.Phone), lower(row.Email)].filter(Boolean)
@@ -100,7 +129,7 @@ export const exportSpreadsheet = async (typeId, dates = {}) => {
   const stamp = new Date().toISOString().slice(0, 10)
   if (typeId === 'reports') {
     const types = ['sales', 'purchases', 'expenses', 'stock', 'payments', 'orders']
-    const reports = await Promise.all(types.map((type) => getReport(type, dateParams(dates))))
+    const reports = await Promise.all(types.map((type) => fetchCompleteReport(type, dates)))
     const sheets = []
     reports.forEach((report, index) => {
       const label = types[index].replace(/^./, (letter) => letter.toUpperCase())

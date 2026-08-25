@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import AuthLayout from './components/AuthLayout.jsx'
@@ -7,45 +8,45 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import PermissionRoute from './components/PermissionRoute.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { SettingsProvider } from './context/SettingsContext.jsx'
-import LoginPage from './pages/auth/LoginPage.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import ExcelManagement from './pages/ExcelManagement.jsx'
-import NotFound from './pages/NotFound.jsx'
-import Settings from './pages/Settings.jsx'
-import Billing from './pages/billing/Billing.jsx'
-import BillingDetails from './pages/billing/BillingDetails.jsx'
-import ExpenseDetails from './pages/expenses/ExpenseDetails.jsx'
-import Expenses from './pages/expenses/Expenses.jsx'
-import NewExpense from './pages/expenses/NewExpense.jsx'
-import Categories from './pages/menu/Categories.jsx'
-import Menu from './pages/menu/Menu.jsx'
-import MenuItemDetails from './pages/menu/MenuItemDetails.jsx'
-import MenuItems from './pages/menu/MenuItems.jsx'
-import NewMenuItem from './pages/menu/NewMenuItem.jsx'
-import NewOrder from './pages/orders/NewOrder.jsx'
-import OrderDetails from './pages/orders/OrderDetails.jsx'
-import Orders from './pages/orders/Orders.jsx'
-import NewPurchase from './pages/purchases/NewPurchase.jsx'
-import PurchaseDetails from './pages/purchases/PurchaseDetails.jsx'
-import Purchases from './pages/purchases/Purchases.jsx'
-import Reports from './pages/reports/Reports.jsx'
-import SaleDetails from './pages/sales/SaleDetails.jsx'
-import Sales from './pages/sales/Sales.jsx'
-import Stock from './pages/stock/Stock.jsx'
-import StockHistory from './pages/stock/StockHistory.jsx'
-import StockItems from './pages/stock/StockItems.jsx'
-import NewSupplier from './pages/suppliers/NewSupplier.jsx'
-import SupplierDetails from './pages/suppliers/SupplierDetails.jsx'
-import Suppliers from './pages/suppliers/Suppliers.jsx'
-import NewUser from './pages/users/NewUser.jsx'
-import UserDetails from './pages/users/UserDetails.jsx'
-import Users from './pages/users/Users.jsx'
+const LoginPage = lazy(() => import('./pages/auth/LoginPage.jsx'))
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
+const ExcelManagement = lazy(() => import('./pages/ExcelManagement.jsx'))
+const NotFound = lazy(() => import('./pages/NotFound.jsx'))
+const Settings = lazy(() => import('./pages/Settings.jsx'))
+const Billing = lazy(() => import('./pages/billing/Billing.jsx'))
+const BillingDetails = lazy(() => import('./pages/billing/BillingDetails.jsx'))
+const ExpenseDetails = lazy(() => import('./pages/expenses/ExpenseDetails.jsx'))
+const Expenses = lazy(() => import('./pages/expenses/Expenses.jsx'))
+const NewExpense = lazy(() => import('./pages/expenses/NewExpense.jsx'))
+const Categories = lazy(() => import('./pages/menu/Categories.jsx'))
+const Menu = lazy(() => import('./pages/menu/Menu.jsx'))
+const MenuItemDetails = lazy(() => import('./pages/menu/MenuItemDetails.jsx'))
+const MenuItems = lazy(() => import('./pages/menu/MenuItems.jsx'))
+const NewMenuItem = lazy(() => import('./pages/menu/NewMenuItem.jsx'))
+const NewOrder = lazy(() => import('./pages/orders/NewOrder.jsx'))
+const OrderDetails = lazy(() => import('./pages/orders/OrderDetails.jsx'))
+const Orders = lazy(() => import('./pages/orders/Orders.jsx'))
+const NewPurchase = lazy(() => import('./pages/purchases/NewPurchase.jsx'))
+const PurchaseDetails = lazy(() => import('./pages/purchases/PurchaseDetails.jsx'))
+const Purchases = lazy(() => import('./pages/purchases/Purchases.jsx'))
+const Reports = lazy(() => import('./pages/reports/Reports.jsx'))
+const SaleDetails = lazy(() => import('./pages/sales/SaleDetails.jsx'))
+const Sales = lazy(() => import('./pages/sales/Sales.jsx'))
+const Stock = lazy(() => import('./pages/stock/Stock.jsx'))
+const StockHistory = lazy(() => import('./pages/stock/StockHistory.jsx'))
+const StockItems = lazy(() => import('./pages/stock/StockItems.jsx'))
+const NewSupplier = lazy(() => import('./pages/suppliers/NewSupplier.jsx'))
+const SupplierDetails = lazy(() => import('./pages/suppliers/SupplierDetails.jsx'))
+const Suppliers = lazy(() => import('./pages/suppliers/Suppliers.jsx'))
+const NewUser = lazy(() => import('./pages/users/NewUser.jsx'))
+const UserDetails = lazy(() => import('./pages/users/UserDetails.jsx'))
+const Users = lazy(() => import('./pages/users/Users.jsx'))
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <SettingsProvider><Routes>
+        <SettingsProvider><Suspense fallback={<div className="grid min-h-screen place-items-center bg-cream"><span className="size-10 animate-spin rounded-full border-4 border-primary-light border-t-primary" /></div>}><Routes>
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
           </Route>
@@ -78,7 +79,7 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Route>
           </Route>
-        </Routes></SettingsProvider>
+        </Routes></Suspense></SettingsProvider>
       </AuthProvider>
     </BrowserRouter>
   )

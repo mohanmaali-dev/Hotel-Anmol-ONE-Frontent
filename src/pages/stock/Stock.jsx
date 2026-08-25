@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { FiArrowDown, FiArrowUp, FiClock, FiPackage, FiPlus } from 'react-icons/fi'
 import { Link, useLocation } from 'react-router-dom'
 
-import { deleteStockItem, getStockItems, getStockSummary, stockIn, stockOut } from '../../api/stockApi.js'
-import { getSuppliers } from '../../api/supplierApi.js'
+import { deleteStockItem, getAllStockItems, getStockItems, getStockSummary, stockIn, stockOut, updateStockItem } from '../../api/stockApi.js'
+import { getAllSuppliers } from '../../api/supplierApi.js'
 import ConfirmDeleteModal from '../../components/ConfirmDeleteModal.jsx'
 import Pagination from '../../components/Pagination.jsx'
 import Toast from '../../components/Toast.jsx'
@@ -37,8 +37,8 @@ function Stock() {
   const [notice, setNotice] = useState(location.state?.message ? { type: 'success', text: location.state.message } : null)
 
   useEffect(() => {
-    getStockItems({ page: 1, limit: 100 }).then((result) => setCatalog(result.data)).catch(() => {})
-    getSuppliers({ page: 1, limit: 100 }).then((result) => setSuppliers(result.data)).catch(() => {})
+    getAllStockItems().then(setCatalog).catch(() => {})
+    getAllSuppliers({ status: 'Active' }).then(setSuppliers).catch(() => {})
   }, [])
 
   const loadStock = useCallback(async () => {
@@ -66,7 +66,7 @@ function Stock() {
   }, [filters.search, loadStock])
 
   const categories = useMemo(() => [...new Set(catalog.map((item) => item.category).filter(Boolean))].sort(), [catalog])
-  const movementItems = catalog.length ? catalog : items
+  const movementItems = (catalog.length ? catalog : items).filter((item) => item.isActive)
 
   const openMovement = (mode, itemId = '') => {
     setMovementMode(mode)
@@ -75,8 +75,8 @@ function Stock() {
   }
 
   const refreshAllStock = async () => {
-    const catalogResult = await getStockItems({ page: 1, limit: 100 })
-    setCatalog(catalogResult.data)
+    const catalogResult = await getAllStockItems()
+    setCatalog(catalogResult)
     await loadStock()
   }
 
@@ -121,6 +121,15 @@ function Stock() {
   }
 
   const updateFilter = (field, value) => { setPage(1); setFilters((current) => ({ ...current, [field]: value })) }
+  const handleToggleActive = async (item) => {
+    try {
+      const result = await updateStockItem(item.id, { ...item, isActive: !item.isActive })
+      await refreshAllStock()
+      setNotice({ type: 'success', text: result.message })
+    } catch (requestError) {
+      setNotice({ type: 'error', text: requestError.message })
+    }
+  }
 
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8"><div className="page-content">
@@ -129,7 +138,7 @@ function Stock() {
       <StockSummary summary={summary} loading={loading} />
       {movementMode === 'in' && <div className="mt-6"><StockInForm key={`in-${selectedItemId}`} items={movementItems} suppliers={suppliers} selectedItemId={selectedItemId} onSubmit={handleStockIn} onCancel={() => setMovementMode('')} submitting={submitting} /></div>}
       {movementMode === 'out' && <div className="mt-6"><StockOutForm key={`out-${selectedItemId}`} items={movementItems} selectedItemId={selectedItemId} onSubmit={handleStockOut} onCancel={() => setMovementMode('')} submitting={submitting} /></div>}
-      <div className="mt-6 space-y-5"><StockFilters filters={filters} categories={categories} onChange={updateFilter} onClear={() => { setPage(1); setFilters(emptyFilters) }} /><StockTable items={items} total={pagination.total} loading={loading} canEdit={can('stock', 'edit')} canDelete={can('stock', 'delete')} onStockIn={(itemId) => openMovement('in', itemId)} onStockOut={(itemId) => openMovement('out', itemId)} onDelete={setPendingDelete} />{!loading && <Pagination pagination={pagination} onPageChange={setPage} label="items" />}</div>
+      <div className="mt-6 space-y-5"><StockFilters filters={filters} categories={categories} onChange={updateFilter} onClear={() => { setPage(1); setFilters(emptyFilters) }} /><StockTable items={items} total={pagination.total} loading={loading} canEdit={can('stock', 'edit')} canDelete={can('stock', 'delete')} onStockIn={(itemId) => openMovement('in', itemId)} onStockOut={(itemId) => openMovement('out', itemId)} onToggleActive={handleToggleActive} onDelete={setPendingDelete} />{!loading && <Pagination pagination={pagination} onPageChange={setPage} label="items" />}</div>
       <ConfirmDeleteModal open={Boolean(pendingDelete)} title={`Delete ${pendingDelete?.name || 'stock item'}?`} message="This stock item will be permanently removed." dependencyType="stock-item" recordId={pendingDelete?.id} confirmLabel="Delete Stock Item" loading={deleting} onConfirm={handleDelete} onClose={() => setPendingDelete(null)} />
     </div></main>
   )

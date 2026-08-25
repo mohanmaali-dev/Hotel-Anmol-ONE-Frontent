@@ -82,7 +82,7 @@ function OrderTable({ orders, total, loading, canEdit, canDelete, onCancel, onDe
                       #{order.orderNo}
                     </Link>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-4">{formatOrderDate(order.date)}</td>
+                  <td className="whitespace-nowrap px-4 py-4">{formatOrderDate(order.date, true)}</td>
                   <td className="whitespace-nowrap px-4 py-4">
                     <span
                       className={`rounded-full px-2.5 py-1 text-xs font-semibold ${orderTypeClasses[order.orderType]}`}

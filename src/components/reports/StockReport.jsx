@@ -26,8 +26,8 @@ function StockReport({ summary = {}, rows = [] }) {
           { label: 'Total Stock Value', value: formatCurrency(summary.totalStockValue), icon: FiDollarSign, color: 'bg-blue-50 text-blue-700' },
           { label: 'Low Stock Items', value: summary.lowStockItems || 0, icon: FiAlertCircle, color: 'bg-amber-50 text-amber-700' },
           { label: 'Out of Stock Items', value: summary.outOfStockItems || 0, icon: FiSlash, color: 'bg-rose-50 text-rose-700' },
-          { label: 'Stock In', value: summary.totalStockIn || 0, icon: FiArrowDown, color: 'bg-emerald-50 text-emerald-700' },
-          { label: 'Stock Out', value: summary.totalStockOut || 0, icon: FiArrowUp, color: 'bg-orange-50 text-orange-700' },
+          { label: 'Stock In Entries', value: summary.totalStockIn || 0, icon: FiArrowDown, color: 'bg-emerald-50 text-emerald-700' },
+          { label: 'Stock Out Entries', value: summary.totalStockOut || 0, icon: FiArrowUp, color: 'bg-orange-50 text-orange-700' },
         ]}
       />
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40">

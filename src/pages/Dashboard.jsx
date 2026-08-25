@@ -8,7 +8,8 @@ import StatCard from '../components/dashboard/StatCard.jsx'
 import Navbar from '../components/layout/Navbar.jsx'
 import Sidebar from '../components/layout/Sidebar.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
-import { formatCurrency } from '../utils/orderFormatters.js'
+import { useSettings } from '../context/SettingsContext.jsx'
+import { formatCurrency, setDefaultCurrency } from '../utils/orderFormatters.js'
 
 const emptyDashboard = {
   sales: { totalSales: 0, dueAmount: 0 },
@@ -22,6 +23,8 @@ const emptyDashboard = {
 
 function Dashboard() {
   const { user } = useAuth()
+  const { settings } = useSettings()
+  setDefaultCurrency(settings.restaurant.currency)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [dashboard, setDashboard] = useState(emptyDashboard)
   const [loading, setLoading] = useState(true)

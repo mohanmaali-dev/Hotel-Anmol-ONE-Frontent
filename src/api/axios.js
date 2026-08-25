@@ -31,6 +31,29 @@ const api = axios.create({
   headers: { Accept: 'application/json' },
 })
 
+let refreshRequest = null
+
+const refreshAccessToken = () => {
+  if (!refreshRequest) {
+    refreshRequest = axios
+      .post(`${apiUrl}/auth/refresh`, {}, {
+        withCredentials: true,
+        timeout: 15000,
+        headers: { Accept: 'application/json' },
+      })
+      .then((response) => {
+        const token = response.data?.data?.token
+        if (!token) throw new Error('The server did not return a new access token')
+        setAuthToken(token)
+        return token
+      })
+      .finally(() => {
+        refreshRequest = null
+      })
+  }
+  return refreshRequest
+}
+
 api.interceptors.request.use((config) => {
   const token = getAuthToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
@@ -39,17 +62,44 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    const status = error.response?.status
-    const body = error.response?.data
+  async (error) => {
+    const originalRequest = error.config
+    const requestUrl = String(originalRequest?.url || '')
+    const canRefresh =
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._sessionRetry &&
+      !requestUrl.includes('/auth/login') &&
+      !requestUrl.includes('/auth/refresh')
 
-    if (status === 401) {
+    let finalError = error
+    if (canRefresh) {
+      originalRequest._sessionRetry = true
+      try {
+        const token = await refreshAccessToken()
+        originalRequest.headers = originalRequest.headers || {}
+        originalRequest.headers.Authorization = `Bearer ${token}`
+        return api(originalRequest)
+      } catch (refreshError) {
+        finalError = refreshError
+        const refreshStatus = refreshError.response?.status
+        if ([400, 401, 403].includes(refreshStatus)) {
+          clearAuthToken()
+          window.dispatchEvent(new CustomEvent('auth:unauthorized'))
+        }
+      }
+    }
+
+    const status = finalError.response?.status
+    const body = finalError.response?.data
+
+    if (status === 401 && !requestUrl.includes('/auth/login')) {
       clearAuthToken()
       window.dispatchEvent(new CustomEvent('auth:unauthorized'))
     }
 
     let message = body?.message
-    if (!error.response) message = 'Unable to reach the server. Check your connection and try again.'
+    if (!finalError.response) message = 'Unable to reach the server. Check your connection and try again.'
     if (!message) message = 'Something went wrong. Please try again.'
 
     if (Array.isArray(body?.errors) && body.errors.length) {

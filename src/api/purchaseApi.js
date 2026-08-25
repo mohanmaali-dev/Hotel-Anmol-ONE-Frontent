@@ -22,8 +22,9 @@ const toPurchasePayload = (purchase, includePayment = true) => ({
   notes: purchase.notes,
   discount: Number(purchase.discount || 0),
   additionalCharges: Number(purchase.additionalCharges || 0),
-  paymentType: purchase.paymentType || null,
-  ...(includePayment ? { paidAmount: Number(purchase.paidAmount || 0) } : {}),
+  ...(includePayment
+    ? { paymentType: purchase.paymentType || null, paidAmount: Number(purchase.paidAmount || 0) }
+    : {}),
   ...(purchase.purchaseStatus ? { purchaseStatus: purchase.purchaseStatus } : {}),
   items: purchase.items?.map((item) => ({
     stockItemId: item.stockItemId || item.itemId,
@@ -66,6 +67,7 @@ export const updatePurchasePayment = async (id, payment) => {
   const response = await api.put(`/purchases/${id}/payment`, {
     paidAmount: Number(payment.paidAmount),
     paymentType: payment.paymentType,
+    reason: payment.reason,
   })
   return { ...response.data, data: normalizePurchase(response.data.data) }
 }

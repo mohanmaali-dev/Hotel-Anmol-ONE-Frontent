@@ -3,7 +3,7 @@ import { FiPlus, FiShoppingCart } from 'react-icons/fi'
 import { Link, useLocation } from 'react-router-dom'
 
 import { getPurchases } from '../../api/purchaseApi.js'
-import { getSuppliers } from '../../api/supplierApi.js'
+import { getAllSuppliers } from '../../api/supplierApi.js'
 import Pagination from '../../components/Pagination.jsx'
 import PurchaseFilters from '../../components/purchases/PurchaseFilters.jsx'
 import PurchaseTable from '../../components/purchases/PurchaseTable.jsx'
@@ -26,8 +26,8 @@ function Purchases() {
   const [message, setMessage] = useState(location.state?.message || '')
 
   useEffect(() => {
-    getSuppliers({ page: 1, limit: 100 })
-      .then((result) => setSuppliers(result.data))
+    getAllSuppliers({ status: 'Active' })
+      .then(setSuppliers)
       .catch(() => setSuppliers([]))
   }, [])
 

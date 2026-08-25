@@ -263,6 +263,7 @@ function PurchaseForm({ initialPurchase, preselectedSupplierId = '', suppliers, 
           paidAmount={form.paidAmount}
           finalAmount={finalAmount}
           onChange={updateForm}
+          disabled={Boolean(initialPurchase)}
         />
         <PurchaseSummary
           subtotal={subtotal}

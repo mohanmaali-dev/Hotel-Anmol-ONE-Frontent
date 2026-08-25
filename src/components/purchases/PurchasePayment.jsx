@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react'
 import { FiSave } from 'react-icons/fi'
 
-import { formatCurrency } from '../../utils/orderFormatters.js'
+import { formatCurrency, getCurrencySymbol } from '../../utils/orderFormatters.js'
 
 const statusClasses = {
   Paid: 'bg-emerald-50 text-emerald-700',
@@ -9,6 +10,7 @@ const statusClasses = {
 }
 
 function PurchasePayment({ paymentType, paidAmount, savedPaymentType, savedPaidAmount, finalAmount, paymentStatus: serverStatus, dueAmount: serverDueAmount, onChange, onUpdate, updating = false, disabled = false }) {
+  const [reason, setReason] = useState('')
   const numericPaidAmount = Math.max(0, Number(paidAmount) || 0)
   const tracksSavedPayment = savedPaymentType !== undefined || savedPaidAmount !== undefined
   const hasChanges = !tracksSavedPayment || paymentType !== savedPaymentType || numericPaidAmount !== Number(savedPaidAmount || 0)
@@ -16,6 +18,9 @@ function PurchasePayment({ paymentType, paidAmount, savedPaymentType, savedPaidA
   const previewStatus = numericPaidAmount <= 0 ? 'Not Paid' : numericPaidAmount < finalAmount ? 'Partial' : 'Paid'
   const dueAmount = hasChanges ? previewDueAmount : serverDueAmount ?? previewDueAmount
   const paymentStatus = hasChanges ? previewStatus : serverStatus || previewStatus
+  const amountReduced = tracksSavedPayment && numericPaidAmount < Number(savedPaidAmount || 0)
+
+  useEffect(() => { setReason('') }, [savedPaidAmount, savedPaymentType])
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40">
@@ -52,7 +57,7 @@ function PurchasePayment({ paymentType, paidAmount, savedPaymentType, savedPaidA
       <label className="mt-4 block">
         <span className="mb-1.5 block text-sm font-semibold text-slate-700">Paid Amount</span>
         <span className="relative block">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{getCurrencySymbol()}</span>
           <input
             type="number"
             min="0"
@@ -64,6 +69,13 @@ function PurchasePayment({ paymentType, paidAmount, savedPaymentType, savedPaidA
           />
         </span>
       </label>
+
+      {amountReduced && (
+        <label className="mt-4 block">
+          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Reason for reducing payment</span>
+          <input type="text" value={reason} disabled={disabled || updating} onChange={(event) => setReason(event.target.value)} placeholder="For example: entered by mistake" className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:bg-slate-50" />
+        </label>
+      )}
 
       <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 text-sm">
         <div>
@@ -79,8 +91,8 @@ function PurchasePayment({ paymentType, paidAmount, savedPaymentType, savedPaidA
       {onUpdate && (
         <button
           type="button"
-          onClick={onUpdate}
-          disabled={disabled || updating || !hasChanges}
+          onClick={() => onUpdate({ reason })}
+          disabled={disabled || updating || !hasChanges || (amountReduced && !reason.trim())}
           className="mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
           <FiSave /> {updating ? 'Updating...' : 'Update Payment'}

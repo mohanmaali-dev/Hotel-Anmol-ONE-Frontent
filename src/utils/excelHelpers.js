@@ -1,11 +1,14 @@
-const allowedExtensions = ['xlsx', 'xls', 'csv']
+import { unitOptions } from './units.js'
+
+const allowedExtensions = ['xlsx', 'csv']
 const normalized = (value) => String(value ?? '').trim().toLowerCase()
-const loadXlsx = () => import('xlsx')
+const stockUnits = new Set(unitOptions)
+const loadExcel = () => import('exceljs').then((module) => module.default || module)
 
 export function validateImportFile(file) {
   if (!file) return 'Please choose an Excel or CSV file.'
   const extension = file.name.split('.').pop()?.toLowerCase()
-  if (!allowedExtensions.includes(extension)) return 'Choose a .xlsx, .xls, or .csv file.'
+  if (!allowedExtensions.includes(extension)) return 'Choose a .xlsx or .csv file.'
   if (file.size > 10 * 1024 * 1024) return 'The selected file is larger than 10 MB.'
   return ''
 }
@@ -28,6 +31,7 @@ const validateRows = (typeId, records) => {
     if (typeId === 'stock-items') {
       ;['Item Name', 'Category', 'Unit'].forEach((column) => requireText(record, column, row))
       ;['Opening Stock', 'Purchase Price', 'Minimum Stock'].forEach((column) => requireNumber(record, column, row))
+      if (!stockUnits.has(normalized(record.Unit))) errors.push({ row, message: `Unit must be one of: ${unitOptions.join(', ')}.` })
     } else if (typeId === 'menu-items') {
       ;['Item Name', 'Category', 'Availability', 'Track Stock'].forEach((column) => requireText(record, column, row))
       requireNumber(record, 'Selling Price', row)
@@ -48,13 +52,23 @@ const validateRows = (typeId, records) => {
 }
 
 export async function createFilePreview(file, type) {
-  const XLSX = await loadXlsx()
-  const buffer = await file.arrayBuffer()
-  const workbook = XLSX.read(buffer, { type: 'array', cellDates: false })
-  const worksheet = workbook.Sheets[workbook.SheetNames[0]]
+  const extension = file.name.split('.').pop()?.toLowerCase()
+  let grid
+  if (extension === 'csv') {
+    grid = parseCsv(await file.text())
+  } else {
+    const ExcelJS = await loadExcel()
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.load(await file.arrayBuffer())
+    const worksheet = workbook.worksheets[0]
+    grid = []
+    worksheet?.eachRow({ includeEmpty: false }, (row) => {
+      grid.push(row.values.slice(1).map(cellText))
+    })
+  }
+  const worksheet = grid?.length
   if (!worksheet) throw new Error('The selected file does not contain a worksheet.')
-  const grid = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false })
-    .filter((row) => row.some((value) => String(value).trim()))
+  grid = grid.filter((row) => row.some((value) => String(value).trim()))
   if (!grid.length) throw new Error('The selected file is empty.')
   const columns = grid[0].map((column) => String(column).trim())
   const optionalColumns = new Set(type.optionalColumns || [])
@@ -73,18 +87,61 @@ export async function createFilePreview(file, type) {
 }
 
 export async function downloadSampleTemplate(type) {
-  const XLSX = await loadXlsx()
-  const worksheet = XLSX.utils.aoa_to_sheet([type.columns, ...type.sampleRows])
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Template')
-  XLSX.writeFile(workbook, `${type.id}-sample.xlsx`)
+  await writeWorkbook(
+    [{ name: 'Template', rows: type.sampleRows.map((row) => Object.fromEntries(type.columns.map((column, index) => [column, row[index] ?? '']))) }],
+    `${type.id}-sample.xlsx`,
+  )
 }
 
 export async function writeWorkbook(sheets, filename) {
-  const XLSX = await loadXlsx()
-  const workbook = XLSX.utils.book_new()
-  sheets.forEach(({ name, rows }) => XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), name.slice(0, 31)))
-  XLSX.writeFile(workbook, filename)
+  const ExcelJS = await loadExcel()
+  const workbook = new ExcelJS.Workbook()
+  sheets.forEach(({ name, rows }) => {
+    const worksheet = workbook.addWorksheet(name.slice(0, 31))
+    const columns = [...new Set(rows.flatMap((row) => Object.keys(row)))]
+    worksheet.columns = columns.map((column) => ({ header: column, key: column, width: Math.min(Math.max(column.length + 2, 14), 35) }))
+    rows.forEach((row) => worksheet.addRow(row))
+    worksheet.getRow(1).font = { bold: true }
+    worksheet.views = [{ state: 'frozen', ySplit: 1 }]
+  })
+  const buffer = await workbook.xlsx.writeBuffer()
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+function cellText(value) {
+  if (value === null || value === undefined) return ''
+  if (value instanceof Date) return value.toISOString().slice(0, 10)
+  if (typeof value === 'object') {
+    if (Array.isArray(value.richText)) return value.richText.map((part) => part.text).join('')
+    if (value.result !== undefined) return value.result
+    if (value.text !== undefined) return value.text
+  }
+  return String(value)
+}
+
+function parseCsv(text) {
+  const rows = []
+  let row = []
+  let value = ''
+  let quoted = false
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index]
+    if (character === '"' && quoted && text[index + 1] === '"') { value += '"'; index += 1 }
+    else if (character === '"') quoted = !quoted
+    else if (character === ',' && !quoted) { row.push(value); value = '' }
+    else if ((character === '\n' || character === '\r') && !quoted) {
+      if (character === '\r' && text[index + 1] === '\n') index += 1
+      row.push(value); rows.push(row); row = []; value = ''
+    } else value += character
+  }
+  if (value || row.length) { row.push(value); rows.push(row) }
+  return rows
 }
 
 export function formatFileSize(bytes) {

@@ -1,4 +1,15 @@
-export const formatCurrency = (value, currency = 'INR') =>
+let defaultCurrency = 'INR'
+
+export const setDefaultCurrency = (currency) => {
+  defaultCurrency = currency || 'INR'
+}
+
+export const getCurrencySymbol = (currency = defaultCurrency) =>
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency })
+    .formatToParts(0)
+    .find((part) => part.type === 'currency')?.value || currency
+
+export const formatCurrency = (value, currency = defaultCurrency) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency,
