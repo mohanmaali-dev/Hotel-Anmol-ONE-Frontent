@@ -1,8 +1,9 @@
 export const importTypes = [
   {
-    id: 'menu-items', module: 'menu', title: 'Import Menu Items', description: 'Add menu names, categories, prices, and availability.',
-    columns: ['Item Name', 'Category', 'Selling Price', 'Availability', 'Track Stock'],
-    sampleRows: [['Paneer Tikka', 'Starter', '280', 'Available', 'No'], ['Fresh Lime Soda', 'Drinks', '110', 'Available', 'No']],
+    id: 'menu-items', module: 'menu', title: 'Import Menu Items', description: 'Add menu names, serving sizes, categories, prices, and availability.',
+    columns: ['Item Name', 'Category', 'Serving Size', 'Selling Price', 'Availability', 'Track Stock'],
+    optionalColumns: ['Serving Size'],
+    sampleRows: [['Paneer Tikka', 'Starter', '1 Plate (8 Pieces)', '280', 'Available', 'No'], ['Fresh Lime Soda', 'Drinks', '250 ml', '110', 'Available', 'No']],
   },
   {
     id: 'stock-items', module: 'stock', title: 'Import Stock Items', description: 'Add ingredients, opening quantity, price, and minimum stock.',
@@ -22,6 +23,7 @@ export const importTypes = [
 ]
 
 export const exportTypes = [
+  { id: 'menu-items', module: 'menu', title: 'Export Menu Items', description: 'Menu items, serving sizes, prices, and availability.', usesDates: false },
   { id: 'orders', module: 'orders', title: 'Export Orders', description: 'Order details and payment status.', usesDates: true },
   { id: 'sales', module: 'sales', title: 'Export Sales', description: 'Sales, paid amounts, and due amounts.', usesDates: true },
   { id: 'purchases', module: 'purchases', title: 'Export Purchases', description: 'Supplier purchases and payment balances.', usesDates: true },

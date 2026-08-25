@@ -8,12 +8,14 @@ const statusClasses = {
   'Not Paid': 'bg-rose-50 text-rose-700',
 }
 
-function PurchasePayment({ paymentType, paidAmount, finalAmount, paymentStatus: serverStatus, dueAmount: serverDueAmount, onChange, onUpdate, updating = false, disabled = false }) {
+function PurchasePayment({ paymentType, paidAmount, savedPaymentType, savedPaidAmount, finalAmount, paymentStatus: serverStatus, dueAmount: serverDueAmount, onChange, onUpdate, updating = false, disabled = false }) {
   const numericPaidAmount = Math.max(0, Number(paidAmount) || 0)
+  const tracksSavedPayment = savedPaymentType !== undefined || savedPaidAmount !== undefined
+  const hasChanges = !tracksSavedPayment || paymentType !== savedPaymentType || numericPaidAmount !== Number(savedPaidAmount || 0)
   const previewDueAmount = Math.max(0, finalAmount - numericPaidAmount)
   const previewStatus = numericPaidAmount <= 0 ? 'Not Paid' : numericPaidAmount < finalAmount ? 'Partial' : 'Paid'
-  const dueAmount = serverDueAmount ?? previewDueAmount
-  const paymentStatus = serverStatus || previewStatus
+  const dueAmount = hasChanges ? previewDueAmount : serverDueAmount ?? previewDueAmount
+  const paymentStatus = hasChanges ? previewStatus : serverStatus || previewStatus
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40">
@@ -78,7 +80,7 @@ function PurchasePayment({ paymentType, paidAmount, finalAmount, paymentStatus: 
         <button
           type="button"
           onClick={onUpdate}
-          disabled={disabled || updating}
+          disabled={disabled || updating || !hasChanges}
           className="mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
           <FiSave /> {updating ? 'Updating...' : 'Update Payment'}

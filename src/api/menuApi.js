@@ -15,6 +15,7 @@ export const normalizeMenuItem = (item) => {
     ...item,
     id: item?._id || item?.id,
     name: item?.itemName || item?.name,
+    servingSize: item?.servingSize || '',
     categoryId: category?.id || item?.categoryId,
     category,
     isAvailable: item?.availability
@@ -35,6 +36,19 @@ export const isMenuItemAvailable = (item, categories = []) => {
 export const getMenuCategories = async (params = {}) => {
   const response = await api.get('/menu/categories', { params })
   return { ...response.data, data: (response.data.data || []).map(normalizeMenuCategory) }
+}
+
+export const getAllMenuCategories = async (params = {}) => {
+  const categories = []
+  let page = 1
+  let pages = 1
+  do {
+    const result = await getMenuCategories({ ...params, page, limit: 100 })
+    categories.push(...result.data)
+    pages = result.pagination?.pages || 1
+    page += 1
+  } while (page <= pages)
+  return categories
 }
 
 export const createMenuCategory = async (category) => {
@@ -76,6 +90,7 @@ const toMenuItemPayload = (item) => {
   if (item.name !== undefined || item.itemName !== undefined) payload.itemName = item.name ?? item.itemName
   if (item.categoryId !== undefined) payload.categoryId = item.categoryId
   if (item.sellingPrice !== undefined) payload.sellingPrice = Number(item.sellingPrice)
+  if (item.servingSize !== undefined) payload.servingSize = item.servingSize
   if (item.description !== undefined) payload.description = item.description
   if (typeof item.isAvailable === 'boolean') payload.availability = item.isAvailable ? 'Available' : 'Unavailable'
   else if (item.availability !== undefined) payload.availability = item.availability

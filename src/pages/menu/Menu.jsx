@@ -26,14 +26,14 @@ function Menu() {
     setLoading(true)
     try {
       const [categoryResult, itemResult, availableResult, unavailableResult] = await Promise.all([
-        getMenuCategories(),
+        getMenuCategories({ page: 1, limit: 6 }),
         getMenuItems({ page: 1, limit: 6 }),
         getMenuItems({ availability: 'Available', page: 1, limit: 1 }),
         getMenuItems({ availability: 'Unavailable', page: 1, limit: 1 }),
       ])
       setCategories(categoryResult.data)
       setItems(itemResult.data)
-      setCounts({ categories: categoryResult.data.length, items: itemResult.pagination?.total ?? itemResult.data.length, available: availableResult.pagination?.total ?? availableResult.data.length, unavailable: unavailableResult.pagination?.total ?? unavailableResult.data.length })
+      setCounts({ categories: categoryResult.pagination?.total ?? categoryResult.data.length, items: itemResult.pagination?.total ?? itemResult.data.length, available: availableResult.pagination?.total ?? availableResult.data.length, unavailable: unavailableResult.pagination?.total ?? unavailableResult.data.length })
     } catch (requestError) {
       setNotice({ type: 'error', text: requestError.message })
     } finally { setLoading(false) }
@@ -79,8 +79,8 @@ function Menu() {
       <div className="mb-6 flex flex-col justify-between gap-4 xl:flex-row xl:items-end"><div><p className="text-sm font-semibold text-primary-dark">MENU MANAGEMENT</p><h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Restaurant Menu</h2><p className="mt-1 text-sm text-slate-500">Manage the dishes customers order and the categories used to organize them.</p></div>{can('menu', 'create') && <Link to="/menu/items/new" className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark"><FiPlus /> Add Menu Item</Link>}</div>
       <MenuSectionNav />
       <MenuSummary categories={categories} items={items} counts={counts} loading={loading} />
-      <div className="mt-6 grid grid-cols-1 gap-6 2xl:grid-cols-2"><MenuItemTable items={items} categories={categories} loading={loading} total={counts.items} canEdit={can('menu', 'edit')} canDelete={can('menu', 'delete')} onToggleAvailability={(id) => { const item = items.find((entry) => entry.id === id); runAction(() => updateMenuItem(id, { isAvailable: !item.isAvailable })) }} onDelete={handleDeleteItem} /><CategoryTable categories={categories.slice(0, 6)} loading={loading} canEdit={can('menu', 'edit')} canDelete={can('menu', 'delete')} onEdit={(category) => navigate(`/menu/categories?edit=${category.id}`)} onToggle={(id) => { const category = categories.find((entry) => entry.id === id); runAction(() => updateMenuCategory(id, { isActive: !category.isActive })) }} onDelete={handleDeleteCategory} /></div>
-      <ConfirmDeleteModal open={Boolean(pendingDelete)} title={`Delete ${pendingDelete?.record?.name || 'record'}?`} message={pendingDelete?.type === 'category' ? 'This category will be permanently removed. Categories containing menu items cannot be deleted.' : 'This menu item and its recipe will be permanently removed. Deletion may be blocked if existing orders use this item.'} confirmLabel={pendingDelete?.type === 'category' ? 'Delete Category' : 'Delete Menu Item'} loading={deleteLoading} onConfirm={confirmDelete} onClose={() => setPendingDelete(null)} />
+      <div className="mt-6 grid grid-cols-1 gap-6 2xl:grid-cols-2"><MenuItemTable items={items} categories={categories} loading={loading} total={counts.items} canEdit={can('menu', 'edit')} canDelete={can('menu', 'delete')} onToggleAvailability={(id) => { const item = items.find((entry) => entry.id === id); runAction(() => updateMenuItem(id, { isAvailable: !item.isAvailable })) }} onDelete={handleDeleteItem} /><CategoryTable categories={categories} total={counts.categories} loading={loading} canEdit={can('menu', 'edit')} canDelete={can('menu', 'delete')} onEdit={(category) => navigate(`/menu/categories?edit=${category.id}`)} onToggle={(id) => { const category = categories.find((entry) => entry.id === id); runAction(() => updateMenuCategory(id, { isActive: !category.isActive })) }} onDelete={handleDeleteCategory} /></div>
+      <ConfirmDeleteModal open={Boolean(pendingDelete)} title={`Delete ${pendingDelete?.record?.name || 'record'}?`} message={pendingDelete?.type === 'category' ? 'This menu category will be permanently removed.' : 'This menu item and its recipe will be permanently removed.'} dependencyType={pendingDelete?.type === 'category' ? 'menu-category' : 'menu-item'} recordId={pendingDelete?.record?.id} confirmLabel={pendingDelete?.type === 'category' ? 'Delete Category' : 'Delete Menu Item'} loading={deleteLoading} onConfirm={confirmDelete} onClose={() => setPendingDelete(null)} />
     </div></main>
   )
 }

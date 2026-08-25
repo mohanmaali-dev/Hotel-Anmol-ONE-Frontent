@@ -1,9 +1,9 @@
-import { FiEye, FiTruck } from 'react-icons/fi'
+import { FiEye, FiTrash2, FiTruck } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 
 import { formatCurrency } from '../../utils/orderFormatters.js'
 
-function SupplierTable({ suppliers, total = suppliers.length, loading = false }) {
+function SupplierTable({ suppliers, total = suppliers.length, loading = false, canDelete = false, onDelete }) {
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40">
       <div className="border-b border-slate-100 px-5 py-4">
@@ -61,14 +61,27 @@ function SupplierTable({ suppliers, total = suppliers.length, loading = false })
                     </span>
                   </td>
                   <td className="px-5 py-4 text-center">
-                    <Link
-                      to={`/suppliers/${supplier.id}`}
-                      aria-label={`View ${supplier.name}`}
-                      title="View supplier"
-                      className="inline-grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-primary/30 hover:bg-primary-light hover:text-primary-dark"
-                    >
-                      <FiEye />
-                    </Link>
+                    <div className="inline-flex items-center gap-1.5">
+                      <Link
+                        to={`/suppliers/${supplier.id}`}
+                        aria-label={`View ${supplier.name}`}
+                        title="View supplier"
+                        className="inline-grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-primary/30 hover:bg-primary-light hover:text-primary-dark"
+                      >
+                        <FiEye />
+                      </Link>
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={() => onDelete?.(supplier)}
+                          aria-label={`Delete ${supplier.name}`}
+                          title="Delete supplier"
+                          className="inline-grid size-8 place-items-center rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

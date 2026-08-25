@@ -6,27 +6,11 @@ import { getBillDetails, updateBillPayment } from '../../api/billingApi.js'
 import BillDetails from '../../components/billing/BillDetails.jsx'
 import BillSummary from '../../components/billing/BillSummary.jsx'
 import PaymentSection from '../../components/billing/PaymentSection.jsx'
+import PrintableBill from '../../components/billing/PrintableBill.jsx'
 import Toast from '../../components/Toast.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { useSettings } from '../../context/SettingsContext.jsx'
-import { formatCurrency, formatOrderDate } from '../../utils/orderFormatters.js'
-
-function createBillText(bill, settings) {
-  const currency = settings.restaurant.currency
-  const itemLines = bill.items.map((item) => `${item.name} | ${item.quantity} x ${formatCurrency(item.rate, currency)} | ${formatCurrency(item.amount, currency)}`)
-  return [
-    settings.restaurant.name.toUpperCase(), 'Restaurant Bill', '',
-    `Bill No: ${bill.billNo}`, `Order No: ${bill.orderNo}`,
-    `Date: ${formatOrderDate(bill.date, true)}`, `Customer: ${bill.customerName}`,
-    `Order Type: ${bill.orderType}`, `Biller: ${bill.billerName || (bill.biller ? 'Assigned user' : '—')}`,
-    '', 'ORDER ITEMS', ...itemLines, '',
-    `Subtotal: ${formatCurrency(bill.subtotal, currency)}`, `Discount: ${formatCurrency(bill.discount, currency)}`,
-    `Additional Charges: ${formatCurrency(bill.additionalCharges, currency)}`, `Final Amount: ${formatCurrency(bill.finalAmount, currency)}`,
-    `Payment Type: ${bill.paymentType || '—'}`, `Paid Amount: ${formatCurrency(bill.paidAmount, currency)}`,
-    `Due Amount: ${formatCurrency(bill.dueAmount, currency)}`, `Payment Status: ${bill.paymentStatus}`,
-    '', settings.billing.footerMessage,
-  ].join('\n')
-}
+import { downloadBillPdf } from '../../utils/billPdf.js'
 
 function BillingDetails() {
   const { id } = useParams()
@@ -36,6 +20,7 @@ function BillingDetails() {
   const [bill, setBill] = useState(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState(location.state?.message || '')
 
@@ -83,14 +68,18 @@ function BillingDetails() {
     }
   }
 
-  const handleDownload = () => {
-    const file = new Blob([createBillText(bill, settings)], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(file)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${bill.billNo}.txt`
-    link.click()
-    URL.revokeObjectURL(url)
+  const handleDownload = async () => {
+    if (downloading) return
+    setDownloading(true)
+    setError('')
+    try {
+      await downloadBillPdf(bill, settings)
+      setMessage('Bill PDF downloaded successfully.')
+    } catch {
+      setError('The bill PDF could not be downloaded. Please try again.')
+    } finally {
+      setDownloading(false)
+    }
   }
 
   if (loading) return <main className="grid min-h-[calc(100vh-72px)] place-items-center"><div className="text-center"><span className="mx-auto block size-10 animate-spin rounded-full border-4 border-primary-light border-t-primary" /><p className="mt-3 text-sm text-slate-500">Loading bill...</p></div></main>
@@ -111,15 +100,15 @@ function BillingDetails() {
             <Link to={`/orders/${bill.orderId}`} className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50"><FiArrowLeft /> View Order</Link>
             {can('sales', 'view') && <Link to={`/sales/${saleNo}`} className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50"><FiTrendingUp /> View Sale</Link>}
             <button type="button" onClick={() => window.print()} className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50"><FiPrinter /> Print Bill</button>
-            <button type="button" onClick={handleDownload} className="flex h-10 items-center gap-2 rounded-lg bg-primary px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark"><FiDownload /> Download Bill</button>
+            <button type="button" disabled={downloading} onClick={handleDownload} className="flex h-10 items-center gap-2 rounded-lg bg-primary px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"><FiDownload /> {downloading ? 'Preparing PDF...' : 'Download PDF'}</button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_380px]">
+        <div className="grid grid-cols-1 gap-6 print:hidden xl:grid-cols-[minmax(0,2fr)_380px]">
           <BillDetails bill={bill} restaurantName={settings.restaurant.name} currency={settings.restaurant.currency} />
           <div className="space-y-6"><BillSummary bill={bill} currency={settings.restaurant.currency} /><PaymentSection bill={bill} onUpdate={handlePaymentUpdate} updating={updating} canEdit={can('billing', 'edit')} /></div>
         </div>
-        <p className="mt-8 hidden text-center text-xs text-slate-500 print:block">{settings.billing.footerMessage}</p>
+        <PrintableBill bill={bill} settings={settings} />
       </div>
     </main>
   )

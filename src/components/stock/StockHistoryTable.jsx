@@ -17,7 +17,7 @@ function StockHistoryTable({ movements, total, loading }) {
         <div className="grid place-items-center px-6 py-16"><span className="size-9 animate-spin rounded-full border-4 border-primary-light border-t-primary" /><p className="mt-3 text-sm text-slate-500">Loading history...</p></div>
       ) : movements.length ? (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1180px] text-left">
+          <table className="w-full min-w-[1320px] text-left">
             <thead>
               <tr className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <th className="px-5 py-3">Date</th>
@@ -27,6 +27,7 @@ function StockHistoryTable({ movements, total, loading }) {
                 <th className="px-4 py-3 text-right">Previous Stock</th>
                 <th className="px-4 py-3 text-right">New Stock</th>
                 <th className="px-4 py-3">Reference</th>
+                <th className="px-4 py-3">Supplier</th>
                 <th className="px-4 py-3">Reason</th>
                 <th className="px-5 py-3">User</th>
               </tr>
@@ -59,7 +60,12 @@ function StockHistoryTable({ movements, total, loading }) {
                   <td className="px-4 py-4 text-right font-semibold text-slate-800">
                     {movement.newStock}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-4">{movement.reference}</td>
+                  <td className="whitespace-nowrap px-4 py-4">
+                    {movement.purchaseId ? <Link to={`/purchases/${movement.purchaseId}`} className="record-link" title="View purchase">{movement.reference}</Link> : movement.reference}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-4">
+                    {movement.supplierId && movement.supplierName ? <Link to={`/suppliers/${movement.supplierId}`} className="record-link" title="View supplier">{movement.supplierName}</Link> : '—'}
+                  </td>
                   <td className="whitespace-nowrap px-4 py-4">{movement.reason}</td>
                   <td className="whitespace-nowrap px-5 py-4">{movement.userName || 'Not available'}</td>
                 </tr>

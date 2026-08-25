@@ -104,6 +104,10 @@ function PurchaseForm({ initialPurchase, preselectedSupplierId = '', suppliers, 
       setValidationError('Please select at least one purchase item.')
       return
     }
+    if (new Set(selectedItems.map((item) => item.itemId)).size !== selectedItems.length) {
+      setValidationError('Please select each purchase item only once.')
+      return
+    }
 
     if (discount > subtotal + additionalCharges) {
       setValidationError('Discount cannot make the final amount negative.')

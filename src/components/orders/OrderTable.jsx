@@ -153,7 +153,7 @@ function OrderTable({ orders, total, loading, canEdit, canDelete, onCancel, onDe
           <p className="mt-1 text-sm text-slate-500">Try changing or clearing the filters.</p>
         </div>
       )}
-      <ConfirmDeleteModal open={pendingAction?.type === 'delete'} title={`Delete order ${pendingAction?.order?.orderNo || ''}?`} message="This order will be permanently removed. This action cannot be undone and may be blocked when related business records exist." confirmLabel="Delete Order" loading={actionLoading} onConfirm={confirmAction} onClose={() => setPendingAction(null)} />
+      <ConfirmDeleteModal open={pendingAction?.type === 'delete'} title={`Delete order ${pendingAction?.order?.orderNo || ''}?`} message="This order will be permanently removed. This action cannot be undone." dependencyType="order" recordId={pendingAction?.order?.id} confirmLabel="Delete Order" loading={actionLoading} onConfirm={confirmAction} onClose={() => setPendingAction(null)} />
     </section>
   )
 }

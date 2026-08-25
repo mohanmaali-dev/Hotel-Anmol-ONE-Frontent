@@ -1,5 +1,5 @@
 import { getExpenses } from './expenseApi.js'
-import { createMenuItem, getMenuCategories, getMenuItems } from './menuApi.js'
+import { createMenuCategory, createMenuItem, getAllMenuCategories, getMenuItems } from './menuApi.js'
 import { getOrders } from './orderApi.js'
 import { getPurchases } from './purchaseApi.js'
 import { getReport } from './reportsApi.js'
@@ -26,14 +26,14 @@ const fetchAll = async (getter, params = {}) => {
 }
 
 export const importSpreadsheetRows = async (typeId, rows) => {
-  const result = { totalRows: rows.length, imported: 0, skipped: 0, failed: 0, errors: [] }
+  const result = { totalRows: rows.length, imported: 0, skipped: 0, failed: 0, createdCategories: 0, errors: [] }
   let existing = new Set()
   let categories = new Map()
 
   if (typeId === 'stock-items') existing = new Set((await fetchAll(getStockItems)).map((item) => lower(item.name)))
   if (typeId === 'menu-items') {
     existing = new Set((await fetchAll(getMenuItems)).map((item) => lower(item.name)))
-    categories = new Map((await getMenuCategories()).data.map((category) => [lower(category.name), category.id]))
+    categories = new Map((await getAllMenuCategories()).map((category) => [lower(category.name), category.id]))
   }
   if (typeId === 'suppliers') existing = new Set((await fetchAll(getSuppliers)).flatMap((supplier) => [lower(supplier.phone), lower(supplier.email)].filter(Boolean)))
 
@@ -47,9 +47,16 @@ export const importSpreadsheetRows = async (typeId, rows) => {
       } else if (typeId === 'menu-items') {
         const key = lower(row['Item Name'])
         if (existing.has(key)) { result.skipped += 1; result.errors.push({ row: row.__row, message: 'Menu item already exists.' }); continue }
-        const categoryId = categories.get(lower(row.Category))
-        if (!categoryId) throw new Error(`Category "${row.Category}" does not exist.`)
-        await createMenuItem({ name: row['Item Name'], categoryId, sellingPrice: number(row['Selling Price']), availability: row.Availability, trackStock: yes(row['Track Stock']), ingredients: [] })
+        const categoryName = String(row.Category || '').trim()
+        let categoryId = categories.get(lower(categoryName))
+        if (!categoryId) {
+          const categoryResult = await createMenuCategory({ name: categoryName, description: '', isActive: true })
+          categoryId = categoryResult.data.id
+          categories.set(lower(categoryName), categoryId)
+          result.createdCategories += 1
+        }
+        const availability = lower(row.Availability) === 'available' ? 'Available' : 'Unavailable'
+        await createMenuItem({ name: row['Item Name'], categoryId, servingSize: row['Serving Size'], sellingPrice: number(row['Selling Price']), availability, trackStock: yes(row['Track Stock']), ingredients: [] })
         existing.add(key)
       } else if (typeId === 'suppliers') {
         const keys = [lower(row.Phone), lower(row.Email)].filter(Boolean)
@@ -70,7 +77,8 @@ const dateParams = ({ fromDate, toDate }) => ({ ...(fromDate ? { fromDate } : {}
 const dateText = (value) => value ? new Date(value).toLocaleDateString('en-IN') : ''
 
 const exporters = {
-  orders: async (dates) => (await fetchAll(getOrders, dateParams(dates))).map((row) => ({ 'Order No.': row.orderNo, Date: dateText(row.date), 'Order Type': row.orderType, Customer: row.customerName, Area: row.areaRoomNo, Subtotal: row.subtotal, Discount: row.discount, 'Additional Charges': row.additionalCharges, 'Final Amount': row.finalAmount, 'Payment Type': row.paymentType, 'Payment Status': row.paymentStatus, Status: row.orderStatus })),
+  'menu-items': async () => (await fetchAll(getMenuItems)).map((row) => ({ 'Item Name': row.name, Category: row.category?.name || '', 'Serving Size': row.servingSize || '', 'Selling Price': row.sellingPrice, Availability: row.isAvailable ? 'Available' : 'Unavailable', 'Track Stock': row.trackStock ? 'Yes' : 'No', Description: row.description || '' })),
+  orders: async (dates) => (await fetchAll(getOrders, dateParams(dates))).map((row) => ({ 'Order No.': row.orderNo, Date: dateText(row.date), 'Order Type': row.orderType, Customer: row.customerName, Area: row.areaRoomNo, Items: (row.items || []).map((item) => `${item.name}${item.servingSize ? ` (${item.servingSize})` : ''} × ${item.quantity}`).join(', '), Subtotal: row.subtotal, Discount: row.discount, 'Additional Charges': row.additionalCharges, 'Final Amount': row.finalAmount, 'Payment Type': row.paymentType, 'Payment Status': row.paymentStatus, Status: row.orderStatus })),
   sales: async (dates) => (await fetchAll(getSales, dateParams(dates))).map((row) => ({ 'Sale No.': row.saleNo, 'Bill No.': row.billNo, 'Order No.': row.orderNo, Date: dateText(row.date), Customer: row.customerName, 'Order Type': row.orderType, 'Final Amount': row.finalAmount, 'Paid Amount': row.paidAmount, 'Due Amount': row.dueAmount, 'Payment Type': row.paymentType, 'Payment Status': row.paymentStatus })),
   purchases: async (dates) => (await fetchAll(getPurchases, dateParams(dates))).map((row) => ({ 'Purchase No.': row.purchaseNo, Date: dateText(row.purchaseDate), Supplier: row.supplierName, 'Invoice No.': row.invoiceNo, 'Final Amount': row.finalAmount, 'Paid Amount': row.paidAmount, 'Due Amount': row.dueAmount, 'Payment Type': row.paymentType, 'Payment Status': row.paymentStatus, Status: row.purchaseStatus })),
   stock: async () => (await fetchAll(getStockItems)).map((row) => ({ 'Item Name': row.name, Category: row.category, 'Current Quantity': row.currentQuantity, Unit: row.unit, 'Purchase Price': row.purchasePrice, 'Stock Value': row.stockValue, 'Minimum Stock': row.minimumStock, Status: row.status })),

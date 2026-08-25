@@ -1,11 +1,11 @@
 import { FiEdit2, FiGrid, FiPower, FiTrash2 } from 'react-icons/fi'
 
-function CategoryTable({ categories, onEdit, onToggle, onDelete, loading = false, canEdit = true, canDelete = false }) {
+function CategoryTable({ categories, onEdit, onToggle, onDelete, total = categories.length, loading = false, canEdit = true, canDelete = false }) {
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40">
       <div className="border-b border-slate-100 px-5 py-4">
         <h2 className="font-bold text-slate-900">Menu Categories</h2>
-        <p className="mt-0.5 text-xs text-slate-500">{categories.length} categories</p>
+        <p className="mt-0.5 text-xs text-slate-500">{total} categories</p>
       </div>
 
       {loading ? (
