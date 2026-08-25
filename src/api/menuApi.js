@@ -24,6 +24,9 @@ export const normalizeMenuItem = (item) => {
     ingredients: (item?.ingredients || []).map((ingredient) => ({
       ...ingredient,
       stockItemId: ingredient.stockItemId?._id || ingredient.stockItemId,
+      unit: String(ingredient.unit || '').toLowerCase(),
+      stockUnit: String(ingredient.stockUnit || ingredient.unit || '').toLowerCase(),
+      stockQuantityUsed: Number(ingredient.stockQuantityUsed ?? ingredient.quantityUsed),
     })),
   }
 }

@@ -9,6 +9,8 @@ import StockCategoryManager from './StockCategoryManager.jsx'
 const inputClass =
   'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10'
 
+const unitName = (unit) => unit ? unit.charAt(0).toUpperCase() + unit.slice(1) : ''
+
 function StockItemForm({ initialItem, suppliers = [], categories = [], canCreateCategory = false, canEditCategory = false, canDeleteCategory = false, onCategoriesChange, onSave, submitting = false, apiError = '', onClearError }) {
   const { settings } = useSettings()
   const availableSuppliers = suppliers.filter(
@@ -17,9 +19,9 @@ function StockItemForm({ initialItem, suppliers = [], categories = [], canCreate
   const [form, setForm] = useState({
     name: initialItem?.name || '',
     category: initialItem?.category || categories.find((category) => category.isActive)?.name || '',
-    unit: initialItem?.unit || 'kg',
+    unit: initialItem?.unit || 'piece',
     currentQuantity: initialItem?.currentQuantity || 0,
-    purchasePrice: initialItem?.purchasePrice || 0,
+    purchasePrice: initialItem?.purchasePrice ?? 0,
     minimumStock: initialItem?.minimumStock ?? settings.stock.defaultMinimumStock,
     supplierId: initialItem?.supplierId || '',
   })
@@ -50,7 +52,6 @@ function StockItemForm({ initialItem, suppliers = [], categories = [], canCreate
       setError('Please select a stock category.')
       return
     }
-
     setError('')
     await onSave({
       ...initialItem,
@@ -88,7 +89,7 @@ function StockItemForm({ initialItem, suppliers = [], categories = [], canCreate
         <div>
           <h2 className="font-bold text-slate-900">{initialItem ? 'Edit Stock Item' : 'Add Stock Item'}</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            {initialItem ? 'Update item settings and minimum stock.' : 'Create a new inventory item.'}
+            {initialItem ? 'Update item details and low-stock alert.' : 'Add an item and its current quantity.'}
           </p>
         </div>
         {(canCreateCategory || canEditCategory || canDeleteCategory) && <button type="button" onClick={() => setShowCategories(true)} className="flex h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-primary/30 bg-primary-light px-3.5 text-sm font-semibold text-primary-dark transition hover:border-primary/50 hover:bg-primary/15"><FiFolder /> Manage Categories</button>}
@@ -143,33 +144,33 @@ function StockItemForm({ initialItem, suppliers = [], categories = [], canCreate
             className={inputClass}
           >
             {unitOptions.map((unit) => (
-              <option key={unit}>{unit}</option>
+              <option key={unit} value={unit}>{unitName(unit)}</option>
             ))}
           </select>
         </label>
 
         <label>
           <span className="mb-1.5 block text-sm font-semibold text-slate-700">
-            {initialItem ? 'Current Stock' : 'Opening Stock'}
+            {initialItem ? `Current Stock (${unitName(form.unit)})` : `Stock Available Now (${unitName(form.unit)})`}
           </span>
           <input
             type="number"
             min="0"
-            step="0.01"
+            step="0.001"
             value={form.currentQuantity}
             onChange={(event) => updateForm('currentQuantity', event.target.value)}
             readOnly={Boolean(initialItem)}
             className={`${inputClass} ${initialItem ? 'bg-slate-50 text-slate-500' : ''}`}
           />
-          {initialItem && <p className="mt-1 text-xs text-slate-400">Use Stock In or Stock Out to change quantity.</p>}
+          {initialItem ? <p className="mt-1 text-xs text-slate-400">Use Stock In or Stock Out to change quantity.</p> : <p className="mt-1 text-xs text-slate-400">Enter 0 if no stock is available yet.</p>}
         </label>
 
         <label>
-          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Purchase Price</span>
+          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Buying Price per {unitName(form.unit)}</span>
           <input
             type="number"
             min="0"
-            step="0.01"
+            step="0.001"
             value={form.purchasePrice}
             onChange={(event) => updateForm('purchasePrice', event.target.value)}
             className={inputClass}
@@ -177,7 +178,7 @@ function StockItemForm({ initialItem, suppliers = [], categories = [], canCreate
         </label>
 
         <label>
-          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Minimum Stock</span>
+          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Low Stock Alert At ({unitName(form.unit)})</span>
           <input
             type="number"
             min="0"

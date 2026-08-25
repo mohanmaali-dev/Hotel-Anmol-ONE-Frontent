@@ -24,7 +24,12 @@ function StockOutForm({ items, selectedItemId, onSubmit, onCancel, submitting })
   const activeItem = items.find((item) => item.id === form.itemId)
 
   const updateForm = (field, value) => {
-    setForm((current) => ({ ...current, [field]: value }))
+    setForm((current) => {
+      if (field === 'itemId') {
+        return { ...current, itemId: value }
+      }
+      return { ...current, [field]: value }
+    })
   }
 
   const handleSubmit = (event) => {
@@ -70,12 +75,11 @@ function StockOutForm({ items, selectedItemId, onSubmit, onCancel, submitting })
           </p>
         </label>
         <label>
-          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Quantity</span>
+          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Quantity ({activeItem?.unit})</span>
           <input
             type="number"
-            min="0.01"
-            step="0.01"
-            max={activeItem?.currentQuantity || 0}
+            min="0.001"
+            step="0.001"
             value={form.quantity}
             onChange={(event) => updateForm('quantity', event.target.value)}
             className={inputClass}

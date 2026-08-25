@@ -78,7 +78,7 @@ function PurchaseForm({ initialPurchase, preselectedSupplierId = '', suppliers, 
         }
 
         if (field === 'quantity') {
-          return { ...item, quantity: Math.max(1, Number(value) || 1) }
+          return { ...item, quantity: Math.max(0.001, Number(value) || 0.001) }
         }
 
         if (field === 'purchasePrice') {
