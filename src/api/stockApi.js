@@ -10,6 +10,7 @@ export const normalizeStockItem = (item) => ({
   ...item,
   id: item?._id || item?.id,
   name: item?.itemName || item?.name,
+  unit: String(item?.unit || '').toLowerCase(),
   stockValue: Number(item?.stockValue ?? Number(item?.currentQuantity || 0) * Number(item?.purchasePrice || 0)),
 })
 
@@ -23,6 +24,7 @@ export const normalizeStockMovement = (movement) => ({
   type: movement?.type === 'IN' ? 'Stock In' : 'Stock Out',
   previousStock: movement?.previousQuantity ?? movement?.previousStock,
   newStock: movement?.newQuantity ?? movement?.newStock,
+  unit: movement?.unit || '',
   userName: movement?.user?.name || '',
   reference:
     movement?.reference ||

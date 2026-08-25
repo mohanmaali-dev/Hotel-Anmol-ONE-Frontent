@@ -7,4 +7,4 @@ export const stockCategories = [
   'Other',
 ]
 
-export const unitOptions = ['kg', 'gram', 'litre', 'piece', 'packet', 'box']
+export { unitOptions } from '../utils/units.js'

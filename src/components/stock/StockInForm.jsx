@@ -11,9 +11,6 @@ function todayDate() {
 
 function StockInForm({ items, suppliers, selectedItemId, onSubmit, onCancel, submitting }) {
   const selectedItem = items.find((item) => item.id === selectedItemId) || items[0]
-  const selectableSuppliers = suppliers.filter(
-    (supplier) => supplier.isActive || supplier.id === selectedItem?.supplierId,
-  )
   const [form, setForm] = useState({
     itemId: selectedItem?.id || '',
     quantity: 1,
@@ -37,6 +34,11 @@ function StockInForm({ items, suppliers, selectedItemId, onSubmit, onCancel, sub
     }
     setForm((current) => ({ ...current, [field]: value }))
   }
+
+  const activeItem = items.find((item) => item.id === form.itemId)
+  const selectableSuppliers = suppliers.filter(
+    (supplier) => supplier.isActive || supplier.id === activeItem?.supplierId,
+  )
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -65,11 +67,11 @@ function StockInForm({ items, suppliers, selectedItemId, onSubmit, onCancel, sub
           </select>
         </label>
         <label>
-          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Quantity</span>
-          <input type="number" min="0.01" step="0.01" value={form.quantity} onChange={(event) => updateForm('quantity', event.target.value)} className={inputClass} />
+          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Quantity ({activeItem?.unit})</span>
+          <input type="number" min="0.001" step="0.001" value={form.quantity} onChange={(event) => updateForm('quantity', event.target.value)} className={inputClass} />
         </label>
         <label>
-          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Purchase Price</span>
+          <span className="mb-1.5 block text-sm font-semibold text-slate-700">Price per {activeItem?.unit}</span>
           <input type="number" min="0" value={form.purchasePrice} onChange={(event) => updateForm('purchasePrice', event.target.value)} className={inputClass} />
         </label>
         <label>

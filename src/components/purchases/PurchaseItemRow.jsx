@@ -1,6 +1,5 @@
 import { FiTrash2 } from 'react-icons/fi'
 
-import { unitOptions } from '../../data/inventoryOptions.js'
 import { formatCurrency } from '../../utils/orderFormatters.js'
 
 const inputClass =
@@ -29,7 +28,8 @@ function PurchaseItemRow({ item, availableItems, onChange, onRemove, canRemove }
         <span className="mb-1.5 block text-xs font-semibold text-slate-600 md:sr-only">Quantity</span>
         <input
           type="number"
-          min="1"
+          min="0.001"
+          step="0.001"
           value={item.quantity}
           onChange={(event) => onChange('quantity', event.target.value)}
           className={inputClass}
@@ -38,20 +38,17 @@ function PurchaseItemRow({ item, availableItems, onChange, onRemove, canRemove }
 
       <label>
         <span className="mb-1.5 block text-xs font-semibold text-slate-600 md:sr-only">Unit</span>
-        <select
+        <input
+          type="text"
           value={item.unit}
-          onChange={(event) => onChange('unit', event.target.value)}
-          className={inputClass}
-        >
-          {unitOptions.map((unit) => (
-            <option key={unit}>{unit}</option>
-          ))}
-        </select>
+          readOnly
+          className={`${inputClass} bg-slate-50 text-slate-500`}
+        />
       </label>
 
       <label>
         <span className="mb-1.5 block text-xs font-semibold text-slate-600 md:sr-only">
-          Purchase Price
+          Price per {item.unit}
         </span>
         <input
           type="number"

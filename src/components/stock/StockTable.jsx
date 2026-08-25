@@ -50,7 +50,7 @@ function StockTable({ items, total, loading, canEdit, canDelete, onStockIn, onSt
                     {item.currentQuantity}
                   </td>
                   <td className="px-4 py-4">{item.unit}</td>
-                  <td className="px-4 py-4 text-right">{formatCurrency(item.purchasePrice)}</td>
+                  <td className="px-4 py-4 text-right"><p>{formatCurrency(item.purchasePrice)}</p><p className="mt-0.5 text-xs text-slate-400">per {item.unit}</p></td>
                   <td className="px-4 py-4 text-right font-semibold text-slate-800">
                     {formatCurrency(item.stockValue)}
                   </td>

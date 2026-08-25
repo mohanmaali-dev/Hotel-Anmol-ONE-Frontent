@@ -54,11 +54,11 @@ function StockHistoryTable({ movements, total, loading }) {
                     </span>
                   </td>
                   <td className="px-4 py-4 text-right font-bold text-slate-800">
-                    {movement.quantity}
+                    {movement.quantity} {movement.unit}
                   </td>
-                  <td className="px-4 py-4 text-right">{movement.previousStock}</td>
+                  <td className="px-4 py-4 text-right">{movement.previousStock} {movement.unit}</td>
                   <td className="px-4 py-4 text-right font-semibold text-slate-800">
-                    {movement.newStock}
+                    {movement.newStock} {movement.unit}
                   </td>
                   <td className="whitespace-nowrap px-4 py-4">
                     {movement.purchaseId ? <Link to={`/purchases/${movement.purchaseId}`} className="record-link" title="View purchase">{movement.reference}</Link> : movement.reference}

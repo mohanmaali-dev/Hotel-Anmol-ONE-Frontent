@@ -52,6 +52,7 @@ function MenuItemForm({ initialItem, categories, stockItems, onSave, submitting 
         if (field === 'quantityUsed') {
           return { ...ingredient, quantityUsed: Math.max(0, Number(value) || 0) }
         }
+        if (field === 'unit') return { ...ingredient, unit: value }
         return ingredient
       }),
     )
@@ -181,16 +182,13 @@ function MenuItemForm({ initialItem, categories, stockItems, onSave, submitting 
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="font-bold text-slate-900">Ingredients / Stock Items</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Quantity used for one menu item</p>
+              <p className="mt-0.5 text-xs text-slate-500">Choose how much stock one plate or serving uses.</p>
             </div>
             <button type="button" onClick={() => setIngredients((current) => [...current, createIngredient()])} className="flex h-9 shrink-0 items-center gap-2 rounded-lg border border-primary/30 px-3 text-sm font-semibold text-primary-dark hover:bg-primary-light">
               <FiPlus /> Add Ingredient
             </button>
           </div>
-          <div className="mt-4 hidden grid-cols-[minmax(200px,2fr)_130px_120px_40px] gap-3 border-b border-slate-100 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid">
-            <span>Stock Item</span><span>Quantity Used</span><span>Unit</span><span />
-          </div>
-          <div>
+          <div className="mt-4 space-y-3">
             {ingredients.map((ingredient) => (
               <IngredientRow
                 key={ingredient.rowId}
@@ -203,7 +201,7 @@ function MenuItemForm({ initialItem, categories, stockItems, onSave, submitting 
             ))}
           </div>
           <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2.5 text-xs text-amber-700">
-            Recipe saved for future stock deduction. Saving this item will not change stock now.
+            Stock is removed only when an order is marked Completed.
           </p>
         </section>
       )}
