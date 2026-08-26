@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { FiAlertCircle, FiArrowLeft, FiFileText, FiPrinter, FiShoppingBag, FiTrash2, FiX } from 'react-icons/fi'
+import { FiAlertCircle, FiArrowLeft, FiFileText, FiPrinter, FiRefreshCw, FiShoppingBag, FiTrash2, FiX } from 'react-icons/fi'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { findBillForOrder, generateBillFromOrder } from '../../api/billingApi.js'
 import { deleteOrder, getOrder, updateOrder } from '../../api/orderApi.js'
-import { getStockSummary } from '../../api/stockApi.js'
 import ConfirmDeleteModal from '../../components/ConfirmDeleteModal.jsx'
 import DangerZone from '../../components/DangerZone.jsx'
 import Toast from '../../components/Toast.jsx'
@@ -27,6 +26,8 @@ function OrderDetails() {
   const { settings } = useSettings()
   const canViewBilling = can('billing', 'view')
   const [order, setOrder] = useState(null)
+  const [loadVersion, setLoadVersion] = useState(0)
+  const [loadErrorStatus, setLoadErrorStatus] = useState(null)
   const [selectedStatus, setSelectedStatus] = useState('Pending')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -41,6 +42,12 @@ function OrderDetails() {
   useEffect(() => {
     let active = true
     setLoading(true)
+    setOrder(null)
+    setExistingBill(null)
+    setError('')
+    setStockIssues([])
+    setLoadErrorStatus(null)
+    setCheckingBill(canViewBilling)
     getOrder(id)
       .then((result) => {
         if (!active) return
@@ -57,10 +64,15 @@ function OrderDetails() {
           })
           .finally(() => { if (active) setCheckingBill(false) })
       })
-      .catch((requestError) => { if (active) { setError(requestError.message); setCheckingBill(false) } })
+      .catch((requestError) => { if (active) { setError(requestError.message); setLoadErrorStatus(requestError.status || 0); setCheckingBill(false) } })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [canViewBilling, id])
+  }, [canViewBilling, id, loadVersion])
+
+  useEffect(() => {
+    if (!location.state?.message) return
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state?.message, navigate])
 
   const handleStatusUpdate = async () => {
     if (saving || selectedStatus === order.orderStatus) return
@@ -72,7 +84,6 @@ function OrderDetails() {
       const refreshed = await getOrder(order.id)
       setOrder(refreshed.data)
       setSelectedStatus(refreshed.data.orderStatus)
-      if (selectedStatus === 'Completed') await getStockSummary().catch(() => null)
       setMessage(result.message || 'Order status updated successfully.')
     } catch (requestError) {
       setSelectedStatus(order.orderStatus)
@@ -133,10 +144,13 @@ function OrderDetails() {
   }
 
   if (!order) {
-    return <main className="grid min-h-[calc(100vh-72px)] place-items-center px-4 py-12"><div className="max-w-md text-center"><span className="mx-auto grid size-14 place-items-center rounded-full bg-slate-100 text-2xl text-slate-400"><FiShoppingBag /></span><h2 className="mt-4 text-xl font-bold text-slate-900">Order not found</h2><p className="mt-1 text-sm text-slate-500">{error || 'This order may have been removed or does not exist.'}</p><Link to="/orders" className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark"><FiArrowLeft /> Back to Orders</Link></div></main>
+    const notFound = loadErrorStatus === 404
+    return <main className="grid min-h-[calc(100vh-72px)] place-items-center px-4 py-12"><div className="max-w-md text-center"><span className="mx-auto grid size-14 place-items-center rounded-full bg-slate-100 text-2xl text-slate-400"><FiShoppingBag /></span><h2 className="mt-4 text-xl font-bold text-slate-900">{notFound ? 'Order not found' : 'Order could not be loaded'}</h2><p className="mt-1 text-sm text-slate-500">{error || 'This order may have been removed or does not exist.'}</p><div className="mt-5 flex flex-wrap justify-center gap-2">{!notFound && <button type="button" onClick={() => setLoadVersion((current) => current + 1)} className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark"><FiRefreshCw /> Try Again</button>}<Link to="/orders" className={`inline-flex h-10 items-center gap-2 rounded-lg px-4 text-sm font-semibold ${notFound ? 'bg-primary text-white hover:bg-primary-dark' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}><FiArrowLeft /> Back to Orders</Link></div></div></main>
   }
 
   const locked = ['Completed', 'Cancelled'].includes(order.orderStatus)
+  const cancellationBlocked =
+    (canViewBilling && checkingBill) || order.paymentStatus !== 'Not Paid' || Boolean(existingBill)
   const billerName = order.billerName || (String(order.biller) === String(user?._id) ? user?.name : order.biller ? 'Assigned user' : '—')
 
   return (
@@ -157,7 +171,7 @@ function OrderDetails() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {existingBill && canViewBilling ? <Link to={`/billing/${existingBill.id}`} className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark"><FiFileText /> View Bill</Link> : can('billing', 'create') && <button type="button" disabled={checkingBill || generatingBill} onClick={handleGenerateBill} className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"><FiFileText /> {checkingBill ? 'Checking Bill...' : generatingBill ? 'Generating...' : 'Generate Bill'}</button>}
+            {existingBill && canViewBilling ? <Link to={`/billing/${existingBill.id}`} className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark"><FiFileText /> View Bill</Link> : canViewBilling && can('billing', 'create') && order.orderStatus !== 'Cancelled' && <button type="button" disabled={checkingBill || generatingBill} onClick={handleGenerateBill} className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"><FiFileText /> {checkingBill ? 'Checking Bill...' : generatingBill ? 'Generating...' : 'Generate Bill'}</button>}
             <button type="button" onClick={() => window.print()} className="flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50"><FiPrinter /> Print Order</button>
           </div>
         </div>
@@ -181,7 +195,7 @@ function OrderDetails() {
             </div>
             {!locked && (
               <div className="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:flex-row">
-                <select value={selectedStatus} onChange={(event) => { setSelectedStatus(event.target.value); setError(''); setStockIssues([]) }} disabled={saving} aria-label="Order status" className="h-10 min-w-48 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10">{statuses.map((status) => <option key={status}>{status}</option>)}</select>
+                <select value={selectedStatus} onChange={(event) => { setSelectedStatus(event.target.value); setError(''); setStockIssues([]) }} disabled={saving} aria-label="Order status" className="h-10 min-w-48 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10">{statuses.map((status) => <option key={status} disabled={status === 'Cancelled' && cancellationBlocked}>{status}</option>)}</select>
                 <button type="button" disabled={saving || selectedStatus === order.orderStatus} onClick={handleStatusUpdate} className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50">{saving ? 'Updating...' : 'Update Status'}</button>
               </div>
             )}

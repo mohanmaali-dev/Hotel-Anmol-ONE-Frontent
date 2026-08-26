@@ -6,10 +6,10 @@ import MobileFilterPanel from '../MobileFilterPanel.jsx'
 const inputClass =
   'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10'
 
-function PurchaseFilters({ filters, suppliers, onChange, onClear }) {
+function PurchaseFilters({ filters, suppliers, showSupplierFilter, onChange, onClear }) {
   return (
     <MobileFilterPanel filters={filters}>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[2fr_repeat(5,1fr)_auto]">
+      <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${showSupplierFilter ? 'xl:grid-cols-[2fr_repeat(5,1fr)_auto]' : 'xl:grid-cols-[2fr_repeat(4,1fr)_auto]'}`}>
         <label className="relative">
           <span className="sr-only">Search purchase or supplier</span>
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -22,17 +22,17 @@ function PurchaseFilters({ filters, suppliers, onChange, onClear }) {
           />
         </label>
 
-        <label>
+        {showSupplierFilter && <label>
           <span className="sr-only">Supplier</span>
           <select value={filters.supplier} onChange={(event) => onChange('supplier', event.target.value)} className={inputClass}>
             <option value="">All suppliers</option>
             {suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name}</option>)}
           </select>
-        </label>
+        </label>}
 
-        <DatePickerField label="From" value={filters.fromDate} onChange={(value) => onChange('fromDate', value)} />
+        <DatePickerField label="From" value={filters.fromDate} max={filters.toDate || undefined} onChange={(value) => onChange('fromDate', value)} />
 
-        <DatePickerField label="To" value={filters.toDate} onChange={(value) => onChange('toDate', value)} />
+        <DatePickerField label="To" value={filters.toDate} min={filters.fromDate || undefined} onChange={(value) => onChange('toDate', value)} />
 
         <label>
           <span className="sr-only">Payment status</span>

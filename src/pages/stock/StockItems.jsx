@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext.jsx'
 function StockItems() {
   const navigate = useNavigate()
   const { can } = useAuth()
+  const canViewSuppliers = can('suppliers', 'view')
   const [searchParams] = useSearchParams()
   const editId = searchParams.get('edit')
   const [initialItem, setInitialItem] = useState(null)
@@ -21,14 +22,17 @@ function StockItems() {
 
   useEffect(() => {
     let active = true
-    const requests = [getAllSuppliers({ status: 'Active' }), getStockCategories()]
+    const requests = [
+      canViewSuppliers ? getAllSuppliers({ status: 'Active' }) : Promise.resolve([]),
+      getStockCategories(),
+    ]
     if (editId) requests.push(getStockItem(editId))
 
     Promise.allSettled(requests)
       .then(([supplierResult, categoryResult, itemResult]) => {
         if (!active) return
         if (supplierResult.status === 'fulfilled') setSuppliers(supplierResult.value)
-        if (supplierResult.status === 'rejected') setError(`Suppliers could not be loaded. ${supplierResult.reason.message}`)
+        if (canViewSuppliers && supplierResult.status === 'rejected') setError(`Suppliers could not be loaded. ${supplierResult.reason.message}`)
         if (categoryResult.status === 'fulfilled') setCategories(categoryResult.value.data)
         if (categoryResult.status === 'rejected') setError(categoryResult.reason.message)
         if (itemResult?.status === 'fulfilled') setInitialItem(itemResult.value.data)
@@ -36,7 +40,7 @@ function StockItems() {
       })
       .finally(() => active && setLoading(false))
     return () => { active = false }
-  }, [editId])
+  }, [canViewSuppliers, editId])
 
   const refreshCategories = async () => {
     const result = await getStockCategories()
@@ -76,7 +80,7 @@ function StockItems() {
         ) : editId && !initialItem ? (
           <div className="rounded-xl border border-slate-200 bg-white p-8 text-center"><FiPackage className="mx-auto text-3xl text-slate-400" /><h3 className="mt-3 font-bold text-slate-800">Stock item not found</h3><p className="mt-1 text-sm text-slate-500">{error || 'This item may have been removed.'}</p><Link to="/stock/items" className="mt-5 inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark">Add a New Item</Link></div>
         ) : (
-          <StockItemForm initialItem={initialItem} suppliers={suppliers} categories={categories} canCreateCategory={can('stock', 'create')} canEditCategory={can('stock', 'edit')} canDeleteCategory={can('stock', 'delete')} onCategoriesChange={refreshCategories} onSave={handleSave} submitting={submitting} apiError={error} onClearError={() => setError('')} />
+          <StockItemForm initialItem={initialItem} suppliers={suppliers} categories={categories} showSupplierField={canViewSuppliers} canCreateCategory={can('stock', 'create')} canEditCategory={can('stock', 'edit')} canDeleteCategory={can('stock', 'delete')} onCategoriesChange={refreshCategories} onSave={handleSave} submitting={submitting} apiError={error} onClearError={() => setError('')} />
         )}
       </div>
     </main>

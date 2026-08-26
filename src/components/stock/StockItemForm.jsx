@@ -11,7 +11,7 @@ const inputClass =
 
 const unitName = (unit) => unit ? unit.charAt(0).toUpperCase() + unit.slice(1) : ''
 
-function StockItemForm({ initialItem, suppliers = [], categories = [], canCreateCategory = false, canEditCategory = false, canDeleteCategory = false, onCategoriesChange, onSave, submitting = false, apiError = '', onClearError }) {
+function StockItemForm({ initialItem, suppliers = [], categories = [], showSupplierField = true, canCreateCategory = false, canEditCategory = false, canDeleteCategory = false, onCategoriesChange, onSave, submitting = false, apiError = '', onClearError }) {
   const { settings } = useSettings()
   const availableSuppliers = suppliers.filter(
     (supplier) => supplier.isActive || supplier.id === initialItem?.supplierId,
@@ -201,7 +201,7 @@ function StockItemForm({ initialItem, suppliers = [], categories = [], canCreate
           />
         </label>
 
-        <label className="sm:col-span-2 xl:col-span-3">
+        {showSupplierField && <label className="sm:col-span-2 xl:col-span-3">
           <span className="mb-1.5 block text-sm font-semibold text-slate-700">
             Supplier <span className="font-normal text-slate-400">(optional)</span>
           </span>
@@ -217,7 +217,7 @@ function StockItemForm({ initialItem, suppliers = [], categories = [], canCreate
               </option>
             ))}
           </select>
-        </label>
+        </label>}
       </div>
 
       <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">

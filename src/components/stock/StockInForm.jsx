@@ -12,7 +12,7 @@ function todayDate() {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
-function StockInForm({ items, suppliers, selectedItemId, onSubmit, onCancel, submitting }) {
+function StockInForm({ items, suppliers, showSupplierField = true, selectedItemId, onSubmit, onCancel, submitting }) {
   const selectedItem = items.find((item) => item.id === selectedItemId) || items[0]
   const [form, setForm] = useState({
     itemId: selectedItem?.id || '',
@@ -75,12 +75,12 @@ function StockInForm({ items, suppliers, selectedItemId, onSubmit, onCancel, sub
       {error && <div className="mt-4 flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-700"><FiAlertCircle className="shrink-0" /><span className="flex-1">{error}</span><button type="button" onClick={() => setError('')} aria-label="Close error"><FiX /></button></div>}
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <label>
+        {showSupplierField && <label>
           <span className="mb-1.5 block text-sm font-semibold text-slate-700">Item</span>
           <select value={form.itemId} onChange={(event) => updateForm('itemId', event.target.value)} className={inputClass}>
             {items.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
-        </label>
+        </label>}
         <label>
           <span className="mb-1.5 block text-sm font-semibold text-slate-700">Quantity ({activeItem?.unit})</span>
           <input type="number" min="0.001" step="0.001" value={form.quantity} onChange={(event) => updateForm('quantity', event.target.value)} className={inputClass} />

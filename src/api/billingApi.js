@@ -25,8 +25,9 @@ export const getBill = async (id) => {
   return { ...response.data, data: normalizeBill(response.data.data) }
 }
 
-export const getBillDetails = async (id) => {
+export const getBillDetails = async (id, includeOrderDetails = true) => {
   const result = await getBill(id)
+  if (!includeOrderDetails) return result
   try {
     const orderResult = await getOrder(result.data.orderId)
     return {

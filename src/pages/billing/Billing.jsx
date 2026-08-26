@@ -1,15 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FiAlertCircle, FiCreditCard, FiX } from 'react-icons/fi'
 
 import { getBills } from '../../api/billingApi.js'
 import Pagination from '../../components/Pagination.jsx'
 import BillingFilters from '../../components/billing/BillingFilters.jsx'
 import BillingTable from '../../components/billing/BillingTable.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
 
 const emptyFilters = { search: '', paymentStatus: '', paymentType: '', date: '' }
 const pageSize = 20
 
 function Billing() {
+  const { can } = useAuth()
+  const requestIdRef = useRef(0)
   const [bills, setBills] = useState([])
   const [filters, setFilters] = useState(emptyFilters)
   const [page, setPage] = useState(1)
@@ -18,6 +21,7 @@ function Billing() {
   const [error, setError] = useState('')
 
   const loadBills = useCallback(async () => {
+    const requestId = ++requestIdRef.current
     setLoading(true)
     setError('')
     try {
@@ -29,13 +33,14 @@ function Billing() {
         ...(filters.paymentType ? { paymentType: filters.paymentType } : {}),
         ...(filters.date ? { fromDate: filters.date, toDate: filters.date } : {}),
       })
+      if (requestId !== requestIdRef.current) return
       setBills(result.data)
       setPagination(result.pagination || { page, limit: pageSize, total: result.data.length, pages: 1 })
     } catch (requestError) {
-      setBills([])
+      if (requestId !== requestIdRef.current) return
       setError(requestError.message)
     } finally {
-      setLoading(false)
+      if (requestId === requestIdRef.current) setLoading(false)
     }
   }, [filters, page])
 
@@ -62,7 +67,13 @@ function Billing() {
 
         <div className="space-y-5">
           <BillingFilters filters={filters} onChange={updateFilter} onClear={() => { setPage(1); setFilters(emptyFilters) }} />
-          <BillingTable bills={bills} total={pagination.total} loading={loading} />
+          <BillingTable
+            bills={bills}
+            total={pagination.total}
+            loading={loading}
+            hasFilters={Object.values(filters).some(Boolean)}
+            canViewOrders={can('orders', 'view')}
+          />
           {!loading && <Pagination pagination={pagination} onPageChange={setPage} label="bills" />}
         </div>
       </div>

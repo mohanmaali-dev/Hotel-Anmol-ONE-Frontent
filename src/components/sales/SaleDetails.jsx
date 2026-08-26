@@ -32,6 +32,8 @@ function InfoSection({ title, icon: Icon, children }) {
 }
 
 function SaleDetails({ sale }) {
+  const moneyOrDash = (value) => (value === null || value === undefined ? '—' : formatCurrency(value))
+
   return (
     <div className="space-y-6">
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40 sm:p-6">
@@ -52,13 +54,14 @@ function SaleDetails({ sale }) {
           <DetailItem label="Order No." value={`#${sale.orderNo}`} />
           <DetailItem label="Order Type" value={sale.orderType} />
           <DetailItem label="Customer" value={sale.customerName} />
+          <DetailItem label="Area Type" value={sale.areaType} />
           <DetailItem label="Area / Room" value={sale.areaRoomNo} />
         </InfoSection>
 
         <InfoSection title="Bill Information" icon={FiFileText}>
           <DetailItem label="Bill No." value={`#${sale.billNo}`} />
-          <DetailItem label="Bill Date" value={formatOrderDate(sale.date)} />
-          <DetailItem label="Subtotal" value={formatCurrency(sale.subtotal)} />
+          <DetailItem label="Bill Date" value={formatOrderDate(sale.date, true)} />
+          <DetailItem label="Subtotal" value={moneyOrDash(sale.subtotal)} />
           <DetailItem label="Final Amount" value={formatCurrency(sale.finalAmount)} />
         </InfoSection>
 
@@ -117,16 +120,16 @@ function SaleDetails({ sale }) {
             <div className="mt-5 space-y-3 text-sm">
               <div className="flex justify-between gap-4">
                 <span className="text-slate-500">Subtotal</span>
-                <span className="font-semibold text-slate-800">{formatCurrency(sale.subtotal)}</span>
+                <span className="font-semibold text-slate-800">{moneyOrDash(sale.subtotal)}</span>
               </div>
               <div className="flex justify-between gap-4">
                 <span className="text-slate-500">Discount</span>
-                <span className="font-semibold text-emerald-700">- {formatCurrency(sale.discount)}</span>
+                <span className="font-semibold text-emerald-700">{sale.discount === null || sale.discount === undefined ? '—' : `- ${formatCurrency(sale.discount)}`}</span>
               </div>
               <div className="flex justify-between gap-4">
                 <span className="text-slate-500">Additional Charges</span>
                 <span className="font-semibold text-slate-800">
-                  {formatCurrency(sale.additionalCharges)}
+                  {moneyOrDash(sale.additionalCharges)}
                 </span>
               </div>
               <div className="flex justify-between gap-4 border-t border-dashed border-slate-200 pt-3">

@@ -3,6 +3,9 @@ import api from './axios.js'
 export const normalizeOrder = (order) => ({
   ...order,
   id: order?._id || order?.id,
+  bill: order?.bill
+    ? { ...order.bill, id: order.bill._id || order.bill.id }
+    : null,
   billerName: order?.biller?.name || '',
   items: (order?.items || []).map((item) => ({
     ...item,

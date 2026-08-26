@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FiPlus, FiShoppingCart } from 'react-icons/fi'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { getPurchases } from '../../api/purchaseApi.js'
 import { getAllSuppliers } from '../../api/supplierApi.js'
@@ -15,7 +15,10 @@ const pageSize = 20
 
 function Purchases() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { can } = useAuth()
+  const requestIdRef = useRef(0)
+  const canViewSuppliers = can('suppliers', 'view')
   const [purchases, setPurchases] = useState([])
   const [suppliers, setSuppliers] = useState([])
   const [filters, setFilters] = useState(emptyFilters)
@@ -23,15 +26,24 @@ function Purchases() {
   const [pagination, setPagination] = useState({ page: 1, limit: pageSize, total: 0, pages: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [supplierError, setSupplierError] = useState('')
   const [message, setMessage] = useState(location.state?.message || '')
 
   useEffect(() => {
-    getAllSuppliers({ status: 'Active' })
-      .then(setSuppliers)
-      .catch(() => setSuppliers([]))
-  }, [])
+    if (!canViewSuppliers) {
+      setSuppliers([])
+      return undefined
+    }
+    let active = true
+    setSupplierError('')
+    getAllSuppliers()
+      .then((data) => { if (active) setSuppliers(data) })
+      .catch((requestError) => { if (active) { setSuppliers([]); setSupplierError(`Supplier filter could not be loaded. ${requestError.message}`) } })
+    return () => { active = false }
+  }, [canViewSuppliers])
 
   const loadPurchases = useCallback(async () => {
+    const requestId = ++requestIdRef.current
     setLoading(true)
     setError('')
     try {
@@ -45,13 +57,14 @@ function Purchases() {
         ...(filters.paymentStatus ? { paymentStatus: filters.paymentStatus } : {}),
         ...(filters.purchaseStatus ? { purchaseStatus: filters.purchaseStatus } : {}),
       })
+      if (requestId !== requestIdRef.current) return
       setPurchases(result.data)
       setPagination(result.pagination || { page, limit: pageSize, total: result.data.length, pages: 1 })
     } catch (requestError) {
-      setPurchases([])
+      if (requestId !== requestIdRef.current) return
       setError(requestError.message)
     } finally {
-      setLoading(false)
+      if (requestId === requestIdRef.current) setLoading(false)
     }
   }, [filters, page])
 
@@ -60,6 +73,11 @@ function Purchases() {
     return () => window.clearTimeout(timer)
   }, [filters.search, loadPurchases])
 
+  useEffect(() => {
+    if (!location.state?.message) return
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state?.message, navigate])
+
   const updateFilter = (field, value) => {
     setPage(1)
     setFilters((current) => ({ ...current, [field]: value }))
@@ -67,9 +85,9 @@ function Purchases() {
 
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8"><div className="page-content">
-      <Toast message={error || message} type={error ? 'error' : 'success'} onClose={() => { setError(''); setMessage('') }} />
+      <Toast message={error || supplierError || message} type={error || supplierError ? 'error' : 'success'} onClose={() => { setError(''); setSupplierError(''); setMessage('') }} />
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-sm font-semibold text-primary-dark">PURCHASE MANAGEMENT</p><div className="mt-1 flex items-center gap-3"><h2 className="text-2xl font-bold tracking-tight text-slate-900">Restaurant Purchases</h2><span className="grid size-8 place-items-center rounded-lg bg-primary-light text-primary-dark"><FiShoppingCart /></span></div><p className="mt-1 text-sm text-slate-500">Track supplier purchases and payments.</p></div>{can('purchases', 'create') && <Link to="/purchases/new" className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark"><FiPlus /> New Purchase</Link>}</div>
-      <div className="space-y-5"><PurchaseFilters filters={filters} suppliers={suppliers} onChange={updateFilter} onClear={() => { setPage(1); setFilters(emptyFilters) }} /><PurchaseTable purchases={purchases} total={pagination.total} loading={loading} />{!loading && <Pagination pagination={pagination} onPageChange={setPage} label="purchases" />}</div>
+      <div className="space-y-5"><PurchaseFilters filters={filters} suppliers={suppliers} showSupplierFilter={canViewSuppliers} onChange={updateFilter} onClear={() => { setPage(1); setFilters(emptyFilters) }} /><PurchaseTable purchases={purchases} total={pagination.total} loading={loading} hasFilters={Object.values(filters).some(Boolean)} canCreate={can('purchases', 'create')} canViewSuppliers={canViewSuppliers} />{!loading && <Pagination pagination={pagination} onPageChange={setPage} label="purchases" />}</div>
     </div></main>
   )
 }

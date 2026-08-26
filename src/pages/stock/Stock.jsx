@@ -21,6 +21,7 @@ const pageSize = 20
 function Stock() {
   const location = useLocation()
   const { can } = useAuth()
+  const canViewSuppliers = can('suppliers', 'view')
   const [items, setItems] = useState([])
   const [catalog, setCatalog] = useState([])
   const [suppliers, setSuppliers] = useState([])
@@ -38,12 +39,15 @@ function Stock() {
 
   useEffect(() => {
     let active = true
-    Promise.allSettled([getAllStockItems(), getAllSuppliers({ status: 'Active' })])
+    Promise.allSettled([
+      getAllStockItems(),
+      canViewSuppliers ? getAllSuppliers({ status: 'Active' }) : Promise.resolve([]),
+    ])
       .then(([catalogResult, supplierResult]) => {
         if (!active) return
         if (catalogResult.status === 'fulfilled') setCatalog(catalogResult.value)
         if (supplierResult.status === 'fulfilled') setSuppliers(supplierResult.value)
-        const failures = [catalogResult, supplierResult].filter((result) => result.status === 'rejected')
+        const failures = [catalogResult, ...(canViewSuppliers ? [supplierResult] : [])].filter((result) => result.status === 'rejected')
         if (failures.length) {
           setNotice((current) => current || {
             type: 'error',
@@ -56,7 +60,7 @@ function Stock() {
         }
       })
     return () => { active = false }
-  }, [])
+  }, [canViewSuppliers])
 
   const loadStock = useCallback(async () => {
     setLoading(true)
@@ -153,7 +157,7 @@ function Stock() {
       <Toast message={notice?.text} type={notice?.type} onClose={() => setNotice(null)} />
       <div className="mb-6 flex flex-col justify-between gap-4 xl:flex-row xl:items-end"><div><p className="text-sm font-semibold text-primary-dark">STOCK &amp; INVENTORY</p><div className="mt-1 flex items-center gap-3"><h2 className="text-2xl font-bold tracking-tight text-slate-900">Current Stock</h2><span className="grid size-8 place-items-center rounded-lg bg-primary-light text-primary-dark"><FiPackage /></span></div><p className="mt-1 text-sm text-slate-500">Monitor quantities and record every stock movement.</p></div><div className="flex flex-wrap gap-2">{can('stock', 'create') && <Link to="/stock/items" className="flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"><FiPlus /> Add Stock Item</Link>}{can('stock', 'edit') && <><button type="button" onClick={() => openMovement('in')} disabled={!movementItems.length} className="flex h-10 items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"><FiArrowDown /> Stock In</button><button type="button" onClick={() => openMovement('out')} disabled={!movementItems.length} className="flex h-10 items-center gap-2 rounded-lg border border-rose-200 bg-white px-3.5 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50"><FiArrowUp /> Stock Out</button></>}<Link to="/stock/history" className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-primary-dark"><FiClock /> View History</Link></div></div>
       <StockSummary summary={summary} loading={loading} />
-      {movementMode === 'in' && <div className="mt-6"><StockInForm key={`in-${selectedItemId}`} items={movementItems} suppliers={suppliers} selectedItemId={selectedItemId} onSubmit={handleStockIn} onCancel={() => setMovementMode('')} submitting={submitting} /></div>}
+      {movementMode === 'in' && <div className="mt-6"><StockInForm key={`in-${selectedItemId}`} items={movementItems} suppliers={suppliers} showSupplierField={canViewSuppliers} selectedItemId={selectedItemId} onSubmit={handleStockIn} onCancel={() => setMovementMode('')} submitting={submitting} /></div>}
       {movementMode === 'out' && <div className="mt-6"><StockOutForm key={`out-${selectedItemId}`} items={movementItems} selectedItemId={selectedItemId} onSubmit={handleStockOut} onCancel={() => setMovementMode('')} submitting={submitting} /></div>}
       <div className="mt-6 space-y-5"><StockFilters filters={filters} categories={categories} onChange={updateFilter} onClear={() => { setPage(1); setFilters(emptyFilters) }} /><StockTable items={items} total={pagination.total} loading={loading} canEdit={can('stock', 'edit')} canDelete={can('stock', 'delete')} onStockIn={(itemId) => openMovement('in', itemId)} onStockOut={(itemId) => openMovement('out', itemId)} onToggleActive={handleToggleActive} onDelete={setPendingDelete} />{!loading && <Pagination pagination={pagination} onPageChange={setPage} label="items" />}</div>
       <ConfirmDeleteModal open={Boolean(pendingDelete)} title={`Delete ${pendingDelete?.name || 'stock item'}?`} message="This stock item will be permanently removed." dependencyType="stock-item" recordId={pendingDelete?.id} confirmLabel="Delete Stock Item" loading={deleting} onConfirm={handleDelete} onClose={() => setPendingDelete(null)} />

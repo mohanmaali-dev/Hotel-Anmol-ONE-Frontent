@@ -21,7 +21,7 @@ function BillDetails({ bill, restaurantName = 'Restaurant', currency = 'INR' }) 
           </span>
           <div>
             <h2 className="text-lg font-bold text-slate-900">{restaurantName}</h2>
-            <p className="text-xs text-slate-500">Main Branch · Restaurant Bill</p>
+            <p className="text-xs text-slate-500">Restaurant Bill</p>
           </div>
         </div>
         <div className="sm:text-right">

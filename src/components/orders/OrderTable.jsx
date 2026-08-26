@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FiAlertTriangle, FiEye, FiInbox, FiSlash, FiTrash2, FiX } from 'react-icons/fi'
+import { FiAlertTriangle, FiEye, FiFileText, FiInbox, FiPlusCircle, FiSlash, FiTrash2, FiX } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 
 import ConfirmDeleteModal from '../ConfirmDeleteModal.jsx'
@@ -11,9 +11,33 @@ const orderTypeClasses = {
   Room: 'bg-violet-50 text-violet-700',
 }
 
-function OrderTable({ orders, total, loading, canEdit, canDelete, onCancel, onDelete }) {
+function OrderTable({
+  orders,
+  total,
+  loading,
+  hasFilters,
+  canCreate,
+  canEdit,
+  canDelete,
+  canViewBilling,
+  canCreateBill,
+  onCancel,
+  onDelete,
+  onGenerateBill,
+}) {
   const [pendingAction, setPendingAction] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const [generatingBillId, setGeneratingBillId] = useState('')
+
+  const generateBill = async (order) => {
+    if (generatingBillId) return
+    setGeneratingBillId(order.id)
+    try {
+      await onGenerateBill(order)
+    } finally {
+      setGeneratingBillId('')
+    }
+  }
 
   const confirmAction = async () => {
     setActionLoading(true)
@@ -34,26 +58,26 @@ function OrderTable({ orders, total, loading, canEdit, canDelete, onCancel, onDe
         <div>
           <h2 className="font-bold text-slate-900">All Orders</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            {total} {total === 1 ? 'order' : 'orders'} found
+            {loading && orders.length ? 'Updating orders...' : `${total} ${total === 1 ? 'order' : 'orders'} found`}
           </p>
         </div>
       </div>
 
       {pendingAction?.type === 'cancel' && (
-        <div className={`flex flex-col gap-3 border-b px-5 py-4 sm:flex-row sm:items-center ${pendingAction.type === 'delete' ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50'}`}>
-          <FiAlertTriangle className={`shrink-0 ${pendingAction.type === 'delete' ? 'text-rose-600' : 'text-amber-600'}`} />
-          <div className="min-w-0 flex-1"><p className={`text-sm font-semibold ${pendingAction.type === 'delete' ? 'text-rose-800' : 'text-amber-800'}`}>{pendingAction.type === 'delete' ? `Permanently delete ${pendingAction.order.orderNo}?` : `Cancel ${pendingAction.order.orderNo}?`}</p><p className={`mt-0.5 text-xs ${pendingAction.type === 'delete' ? 'text-rose-600' : 'text-amber-700'}`}>{pendingAction.type === 'delete' ? 'This removes the complete order and its related frontend bill and sale. This cannot be undone.' : 'The order stays available for billing, sales, and reporting records.'}</p></div>
-          <div className="flex shrink-0 gap-2"><button type="button" disabled={actionLoading} onClick={() => setPendingAction(null)} className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-60"><FiX /> Keep Order</button><button type="button" disabled={actionLoading} onClick={confirmAction} className={`flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-white disabled:opacity-60 ${pendingAction.type === 'delete' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-amber-600 hover:bg-amber-700'}`}>{pendingAction.type === 'delete' ? <FiTrash2 /> : <FiSlash />}{actionLoading ? 'Working...' : pendingAction.type === 'delete' ? 'Delete Permanently' : 'Cancel Order'}</button></div>
+        <div className="flex flex-col gap-3 border-b border-amber-200 bg-amber-50 px-5 py-4 sm:flex-row sm:items-center">
+          <FiAlertTriangle className="shrink-0 text-amber-600" />
+          <div className="min-w-0 flex-1"><p className="text-sm font-semibold text-amber-800">Cancel {pendingAction.order.orderNo}?</p><p className="mt-0.5 text-xs text-amber-700">The order will stay in history, but it cannot be edited or completed.</p></div>
+          <div className="flex shrink-0 gap-2"><button type="button" disabled={actionLoading} onClick={() => setPendingAction(null)} className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-60"><FiX /> Keep Order</button><button type="button" disabled={actionLoading} onClick={confirmAction} className="flex h-9 items-center gap-1.5 rounded-lg bg-amber-600 px-3 text-xs font-semibold text-white hover:bg-amber-700 disabled:opacity-60"><FiSlash />{actionLoading ? 'Cancelling...' : 'Cancel Order'}</button></div>
         </div>
       )}
 
-      {loading ? (
+      {loading && !orders.length ? (
         <div className="grid place-items-center px-6 py-16">
           <span className="size-9 animate-spin rounded-full border-4 border-primary-light border-t-primary" />
           <p className="mt-3 text-sm text-slate-500">Loading orders...</p>
         </div>
       ) : orders.length ? (
-        <div className="overflow-x-auto">
+        <div className={`overflow-x-auto transition-opacity ${loading ? 'pointer-events-none opacity-60' : ''}`} aria-busy={loading}>
           <table className="w-full min-w-[1780px] text-left">
             <thead>
               <tr className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -97,7 +121,7 @@ function OrderTable({ orders, total, loading, canEdit, canDelete, onCancel, onDe
                     {order.areaRoomNo || '—'}
                   </td>
                   <td className="whitespace-nowrap px-4 py-4 font-medium text-slate-700">
-                    {order.customerName}
+                    {order.customerName || '—'}
                   </td>
                   <td className="whitespace-nowrap px-4 py-4 font-semibold text-slate-800">
                     {formatCurrency(order.subtotal)}
@@ -111,7 +135,7 @@ function OrderTable({ orders, total, loading, canEdit, canDelete, onCancel, onDe
                   <td className="whitespace-nowrap px-4 py-4 font-bold text-slate-900">
                     {formatCurrency(order.finalAmount)}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-4">{order.paymentType}</td>
+                  <td className="whitespace-nowrap px-4 py-4">{order.paymentType || '—'}</td>
                   <td className="whitespace-nowrap px-4 py-4">
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -137,7 +161,7 @@ function OrderTable({ orders, total, loading, canEdit, canDelete, onCancel, onDe
                   <td className="whitespace-nowrap px-4 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${order.orderStatus === 'Cancelled' ? 'bg-slate-100 text-slate-600' : order.orderStatus === 'Completed' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>{order.orderStatus}</span></td>
                   <td className="whitespace-nowrap px-4 py-4">{order.billerName || (order.biller ? 'Assigned user' : '—')}</td>
                   <td className="px-5 py-4 text-center">
-                    <div className="flex justify-center gap-1.5"><Link to={`/orders/${order.id}`} aria-label={`View ${order.orderNo}`} title="View order" className="inline-grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-primary/30 hover:bg-primary-light hover:text-primary-dark"><FiEye /></Link>{canEdit && !['Cancelled', 'Completed'].includes(order.orderStatus) && <button type="button" onClick={() => setPendingAction({ type: 'cancel', order })} aria-label={`Cancel ${order.orderNo}`} title="Cancel order" className="inline-grid size-8 place-items-center rounded-lg border border-amber-200 text-amber-600 hover:bg-amber-50"><FiSlash /></button>}{canDelete && order.orderStatus !== 'Completed' && <button type="button" onClick={() => setPendingAction({ type: 'delete', order })} aria-label={`Delete ${order.orderNo}`} title="Permanently delete order" className="inline-grid size-8 place-items-center rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50"><FiTrash2 /></button>}</div>
+                    <div className="flex justify-center gap-1.5"><Link to={`/orders/${order.id}`} aria-label={`View ${order.orderNo}`} title="View order" className="inline-grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-primary/30 hover:bg-primary-light hover:text-primary-dark"><FiEye /></Link>{canViewBilling && order.bill && <Link to={`/billing/${order.bill.id}`} aria-label={`View bill for ${order.orderNo}`} title={`View bill ${order.bill.billNo}`} className="inline-grid size-8 place-items-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50"><FiFileText /></Link>}{canCreateBill && !order.bill && order.orderStatus !== 'Cancelled' && <button type="button" disabled={Boolean(generatingBillId)} onClick={() => generateBill(order)} aria-label={`Generate bill for ${order.orderNo}`} title="Generate bill" className="inline-grid size-8 place-items-center rounded-lg border border-primary/30 text-primary-dark hover:bg-primary-light disabled:cursor-not-allowed disabled:opacity-50">{generatingBillId === order.id ? <span className="size-3.5 animate-spin rounded-full border-2 border-primary/30 border-t-primary" /> : <FiPlusCircle />}</button>}{canEdit && order.paymentStatus === 'Not Paid' && !order.bill && !['Cancelled', 'Completed'].includes(order.orderStatus) && <button type="button" onClick={() => setPendingAction({ type: 'cancel', order })} aria-label={`Cancel ${order.orderNo}`} title="Cancel order" className="inline-grid size-8 place-items-center rounded-lg border border-amber-200 text-amber-600 hover:bg-amber-50"><FiSlash /></button>}{canDelete && order.orderStatus !== 'Completed' && <button type="button" onClick={() => setPendingAction({ type: 'delete', order })} aria-label={`Delete ${order.orderNo}`} title="Permanently delete order" className="inline-grid size-8 place-items-center rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50"><FiTrash2 /></button>}</div>
                   </td>
                 </tr>
               ))}
@@ -150,7 +174,13 @@ function OrderTable({ orders, total, loading, canEdit, canDelete, onCancel, onDe
             <FiInbox />
           </span>
           <p className="mt-3 font-semibold text-slate-700">No orders found</p>
-          <p className="mt-1 text-sm text-slate-500">Try changing or clearing the filters.</p>
+          <p className="mt-1 text-sm text-slate-500">
+            {hasFilters
+              ? 'Try changing or clearing the filters.'
+              : canCreate
+                ? 'Create your first order using the New Order button.'
+                : 'Orders will appear here when they are created.'}
+          </p>
         </div>
       )}
       <ConfirmDeleteModal open={pendingAction?.type === 'delete'} title={`Delete order ${pendingAction?.order?.orderNo || ''}?`} message="This order will be permanently removed. This action cannot be undone." dependencyType="order" recordId={pendingAction?.order?.id} confirmLabel="Delete Order" loading={actionLoading} onConfirm={confirmAction} onClose={() => setPendingAction(null)} />

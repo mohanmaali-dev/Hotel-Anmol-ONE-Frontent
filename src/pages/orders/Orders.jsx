@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FiChevronLeft, FiChevronRight, FiPlus } from 'react-icons/fi'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { deleteOrder, getOrders, updateOrder } from '../../api/orderApi.js'
+import { generateBillFromOrder } from '../../api/billingApi.js'
 import OrderFilters from '../../components/orders/OrderFilters.jsx'
 import OrderTable from '../../components/orders/OrderTable.jsx'
 import Toast from '../../components/Toast.jsx'
@@ -14,6 +15,8 @@ const pageSize = 20
 function Orders() {
   const { can } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
+  const requestIdRef = useRef(0)
   const [orders, setOrders] = useState([])
   const [filters, setFilters] = useState(emptyFilters)
   const [page, setPage] = useState(1)
@@ -23,6 +26,7 @@ function Orders() {
   const [message, setMessage] = useState(location.state?.message || '')
 
   const loadOrders = useCallback(async () => {
+    const requestId = ++requestIdRef.current
     setLoading(true)
     setError('')
     try {
@@ -35,15 +39,21 @@ function Orders() {
         ...(filters.orderStatus ? { status: filters.orderStatus } : {}),
         ...(filters.date ? { fromDate: filters.date, toDate: filters.date } : {}),
       })
+      if (requestId !== requestIdRef.current) return
       setOrders(result.data)
       setPagination(result.pagination || { page, limit: pageSize, total: result.data.length, pages: 1 })
     } catch (requestError) {
-      setOrders([])
+      if (requestId !== requestIdRef.current) return
       setError(requestError.message)
     } finally {
-      setLoading(false)
+      if (requestId === requestIdRef.current) setLoading(false)
     }
   }, [filters, page])
+
+  useEffect(() => {
+    if (!location.state?.message) return
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state?.message, navigate])
 
   useEffect(() => {
     const timer = window.setTimeout(loadOrders, filters.search ? 300 : 0)
@@ -80,6 +90,18 @@ function Orders() {
     }
   }
 
+  const handleGenerateBill = async (order) => {
+    setError('')
+    try {
+      const result = await generateBillFromOrder(order.id)
+      navigate(`/billing/${result.data.id}`, {
+        state: { message: result.message || 'Bill generated successfully.' },
+      })
+    } catch (requestError) {
+      setError(requestError.message)
+    }
+  }
+
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       <div className="page-content">
@@ -99,7 +121,20 @@ function Orders() {
 
         <div className="space-y-5">
           <OrderFilters filters={filters} onChange={updateFilter} onClear={() => { setPage(1); setFilters(emptyFilters) }} />
-          <OrderTable orders={orders} total={pagination.total} loading={loading} canEdit={can('orders', 'edit')} canDelete={can('orders', 'delete')} onCancel={handleCancel} onDelete={handleDelete} />
+          <OrderTable
+            orders={orders}
+            total={pagination.total}
+            loading={loading}
+            hasFilters={Object.values(filters).some(Boolean)}
+            canCreate={can('orders', 'create')}
+            canEdit={can('orders', 'edit')}
+            canDelete={can('orders', 'delete')}
+            canViewBilling={can('billing', 'view')}
+            canCreateBill={can('billing', 'view') && can('billing', 'create')}
+            onCancel={handleCancel}
+            onDelete={handleDelete}
+            onGenerateBill={handleGenerateBill}
+          />
 
           {!loading && pagination.pages > 1 && (
             <div className="flex flex-col items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:flex-row">

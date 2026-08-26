@@ -15,20 +15,22 @@ const statusDots = {
   Partial: 'bg-amber-500',
 }
 
-function SalesTable({ sales, total, loading }) {
+function SalesTable({ sales, total, loading, hasFilters, canViewBilling, canViewOrders }) {
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40">
       <div className="border-b border-slate-100 px-5 py-4">
         <h2 className="font-bold text-slate-900">All Sales</h2>
         <p className="mt-0.5 text-xs text-slate-500">
-          {total} {total === 1 ? 'sale' : 'sales'} found
+          {loading && sales.length
+            ? 'Updating sales...'
+            : `${total} ${total === 1 ? 'sale' : 'sales'} found`}
         </p>
       </div>
 
-      {loading ? (
+      {loading && !sales.length ? (
         <div className="grid place-items-center px-6 py-16"><span className="size-9 animate-spin rounded-full border-4 border-primary-light border-t-primary" /><p className="mt-3 text-sm text-slate-500">Loading sales...</p></div>
       ) : sales.length ? (
-        <div className="overflow-x-auto">
+        <div className={`overflow-x-auto transition-opacity ${loading ? 'pointer-events-none opacity-60' : ''}`} aria-busy={loading}>
           <table className="w-full min-w-[1480px] text-left">
             <thead>
               <tr className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -56,15 +58,15 @@ function SalesTable({ sales, total, loading }) {
                     </Link>
                   </td>
                   <td className="whitespace-nowrap px-4 py-4 font-medium text-slate-700">
-                    {sale.billId ? <Link to={`/billing/${sale.billId}`} className="record-link" title="View related bill">#{sale.billNo}</Link> : `#${sale.billNo}`}
+                    {sale.billId && canViewBilling ? <Link to={`/billing/${sale.billId}`} className="record-link" title="View related bill">#{sale.billNo}</Link> : `#${sale.billNo}`}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-4">{sale.orderId ? <Link to={`/orders/${sale.orderId}`} className="record-link" title="View related order">#{sale.orderNo}</Link> : `#${sale.orderNo}`}</td>
-                  <td className="whitespace-nowrap px-4 py-4">{formatOrderDate(sale.date)}</td>
+                  <td className="whitespace-nowrap px-4 py-4">{sale.orderId && canViewOrders ? <Link to={`/orders/${sale.orderId}`} className="record-link" title="View related order">#{sale.orderNo}</Link> : `#${sale.orderNo}`}</td>
+                  <td className="whitespace-nowrap px-4 py-4">{formatOrderDate(sale.date, true)}</td>
                   <td className="whitespace-nowrap px-4 py-4 font-medium text-slate-700">
-                    {sale.customerName}
+                    {sale.customerName || '—'}
                   </td>
                   <td className="whitespace-nowrap px-4 py-4">{sale.orderType}</td>
-                  <td className="whitespace-nowrap px-4 py-4">{sale.paymentType}</td>
+                  <td className="whitespace-nowrap px-4 py-4">{sale.paymentType || '—'}</td>
                   <td className="whitespace-nowrap px-4 py-4">
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${statusClasses[sale.paymentStatus]}`}
@@ -104,7 +106,11 @@ function SalesTable({ sales, total, loading }) {
             <FiShoppingCart />
           </span>
           <p className="mt-3 font-semibold text-slate-700">No sales found</p>
-          <p className="mt-1 text-sm text-slate-500">Try changing or clearing the filters.</p>
+          <p className="mt-1 text-sm text-slate-500">
+            {hasFilters
+              ? 'Try changing or clearing the filters.'
+              : 'Sales will appear here automatically after bills are generated.'}
+          </p>
         </div>
       )}
     </section>
