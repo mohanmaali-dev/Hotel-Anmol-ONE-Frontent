@@ -32,6 +32,9 @@ function PurchaseItemRow({ item, availableItems, onChange, onRemove, canRemove }
           step="0.001"
           value={item.quantity}
           onChange={(event) => onChange('quantity', event.target.value)}
+          onBlur={(event) => {
+            if (event.target.value === '') onChange('quantity', 1)
+          }}
           className={inputClass}
         />
       </label>
@@ -55,6 +58,9 @@ function PurchaseItemRow({ item, availableItems, onChange, onRemove, canRemove }
           min="0"
           value={item.purchasePrice}
           onChange={(event) => onChange('purchasePrice', event.target.value)}
+          onBlur={(event) => {
+            if (event.target.value === '') onChange('purchasePrice', 0)
+          }}
           className={inputClass}
         />
       </label>

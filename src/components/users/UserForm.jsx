@@ -28,6 +28,10 @@ function UserForm({ initialUser, onSave, saving = false, apiError = '', onClearE
       setError('Password must contain at least 8 characters.')
       return
     }
+    if (initialUser && form.password && form.password.length < 8) {
+      setError('The new password must contain at least 8 characters.')
+      return
+    }
     if (form.password !== form.confirmPassword) {
       setError('Password and Confirm Password do not match.')
       return

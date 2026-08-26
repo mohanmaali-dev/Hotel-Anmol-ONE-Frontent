@@ -50,7 +50,7 @@ function MenuItemForm({ initialItem, categories, stockItems, onSave, submitting 
           }
         }
         if (field === 'quantityUsed') {
-          return { ...ingredient, quantityUsed: Math.max(0, Number(value) || 0) }
+          return { ...ingredient, quantityUsed: value }
         }
         if (field === 'unit') return { ...ingredient, unit: value }
         return ingredient
@@ -60,17 +60,34 @@ function MenuItemForm({ initialItem, categories, stockItems, onSave, submitting 
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    const selectedIngredients = ingredients.filter(
-      (ingredient) => ingredient.stockItemId && ingredient.quantityUsed > 0,
-    )
+    const selectedIngredients = ingredients.filter((ingredient) => ingredient.stockItemId)
 
-    if (!form.name.trim() || !form.categoryId || Number(form.sellingPrice) < 0) {
+    if (
+      !form.name.trim() ||
+      !form.categoryId ||
+      form.sellingPrice === '' ||
+      !Number.isFinite(Number(form.sellingPrice)) ||
+      Number(form.sellingPrice) < 0
+    ) {
       setError('Please enter the item name, category, and a valid selling price.')
       return
     }
 
     if (form.trackStock && !selectedIngredients.length) {
       setError('Please add at least one stock ingredient or turn Stock Tracking off.')
+      return
+    }
+
+    if (
+      form.trackStock &&
+      selectedIngredients.some(
+        (ingredient) =>
+          ingredient.quantityUsed === '' ||
+          !Number.isFinite(Number(ingredient.quantityUsed)) ||
+          Number(ingredient.quantityUsed) <= 0,
+      )
+    ) {
+      setError('Please enter a quantity greater than zero for every ingredient.')
       return
     }
 
@@ -94,7 +111,7 @@ function MenuItemForm({ initialItem, categories, stockItems, onSave, submitting 
         ({ stockItemId, stockItemName, quantityUsed, unit }) => ({
           stockItemId,
           stockItemName,
-          quantityUsed,
+          quantityUsed: Number(quantityUsed),
           unit,
         }),
       ),

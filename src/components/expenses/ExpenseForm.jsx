@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FiAlertCircle, FiSave, FiX } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 
+import DatePickerField from '../DatePickerField.jsx'
 import { expenseCategories } from '../../data/expenseOptions.js'
 import { getCurrencySymbol } from '../../utils/orderFormatters.js'
 
@@ -28,7 +29,7 @@ function ExpenseForm({ initialExpense, onSave, submitting = false, apiError = ''
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    if (!form.date || Number(form.amount) <= 0 || !form.description.trim()) {
+    if (!form.date || form.amount === '' || !Number.isFinite(Number(form.amount)) || Number(form.amount) <= 0 || !form.description.trim()) {
       setError('Please enter the date, a valid amount, and description.')
       return
     }
@@ -52,7 +53,7 @@ function ExpenseForm({ initialExpense, onSave, submitting = false, apiError = ''
         <p className="mt-0.5 text-xs text-slate-500">Record a restaurant operating expense</p>
 
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <label><span className="mb-1.5 block text-sm font-semibold text-slate-700">Date</span><input type="date" value={form.date} onChange={(event) => updateForm('date', event.target.value)} className={inputClass} /></label>
+          <div><span className="mb-1.5 block text-sm font-semibold text-slate-700">Date</span><DatePickerField fullYear ariaLabel="Expense Date" value={form.date} onChange={(value) => updateForm('date', value)} /></div>
           <label><span className="mb-1.5 block text-sm font-semibold text-slate-700">Expense Category</span><select value={form.category} onChange={(event) => updateForm('category', event.target.value)} className={inputClass}>{expenseCategories.map((category) => <option key={category}>{category}</option>)}</select></label>
           <label><span className="mb-1.5 block text-sm font-semibold text-slate-700">Amount</span><span className="relative block"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{getCurrencySymbol()}</span><input type="number" min="0" value={form.amount} onChange={(event) => updateForm('amount', event.target.value)} className={`${inputClass} pl-8`} /></span></label>
 

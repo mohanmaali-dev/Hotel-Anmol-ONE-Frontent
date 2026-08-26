@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import { FiArrowDown, FiX } from 'react-icons/fi'
+import { FiAlertCircle, FiArrowDown, FiX } from 'react-icons/fi'
+
+import DatePickerField from '../DatePickerField.jsx'
+import { validateStockInForm } from '../../utils/stockFormValidation.js'
 
 const inputClass =
   'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10'
@@ -20,8 +23,10 @@ function StockInForm({ items, suppliers, selectedItemId, onSubmit, onCancel, sub
     date: todayDate(),
     note: '',
   })
+  const [error, setError] = useState('')
 
   const updateForm = (field, value) => {
+    setError('')
     if (field === 'itemId') {
       const item = items.find((stockItem) => stockItem.id === value)
       setForm((current) => ({
@@ -42,7 +47,15 @@ function StockInForm({ items, suppliers, selectedItemId, onSubmit, onCancel, sub
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    onSubmit({ ...form, date: `${form.date}T12:00:00.000Z` })
+    const quantity = Number(form.quantity)
+    const purchasePrice = Number(form.purchasePrice)
+    const validationError = validateStockInForm(form)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+    setError('')
+    onSubmit({ ...form, quantity, purchasePrice, date: `${form.date}T12:00:00.000Z` })
   }
 
   return (
@@ -58,6 +71,8 @@ function StockInForm({ items, suppliers, selectedItemId, onSubmit, onCancel, sub
           <FiX />
         </button>
       </div>
+
+      {error && <div className="mt-4 flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-700"><FiAlertCircle className="shrink-0" /><span className="flex-1">{error}</span><button type="button" onClick={() => setError('')} aria-label="Close error"><FiX /></button></div>}
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <label>
@@ -85,10 +100,10 @@ function StockInForm({ items, suppliers, selectedItemId, onSubmit, onCancel, sub
           <span className="mb-1.5 block text-sm font-semibold text-slate-700">Reference / Purchase No.</span>
           <input type="text" value={form.reference} onChange={(event) => updateForm('reference', event.target.value)} placeholder="e.g. PUR-2005" className={inputClass} />
         </label>
-        <label>
+        <div>
           <span className="mb-1.5 block text-sm font-semibold text-slate-700">Date</span>
-          <input type="date" value={form.date} onChange={(event) => updateForm('date', event.target.value)} className={inputClass} />
-        </label>
+          <DatePickerField fullYear ariaLabel="Stock In Date" value={form.date} onChange={(value) => updateForm('date', value)} />
+        </div>
         <label className="sm:col-span-2">
           <span className="mb-1.5 block text-sm font-semibold text-slate-700">Note</span>
           <input type="text" value={form.note} onChange={(event) => updateForm('note', event.target.value)} placeholder="Optional note" className={inputClass} />

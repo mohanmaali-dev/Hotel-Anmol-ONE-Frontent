@@ -52,14 +52,26 @@ function StockItemForm({ initialItem, suppliers = [], categories = [], canCreate
       setError('Please select a stock category.')
       return
     }
+    const numericFields = [
+      ['current stock', form.currentQuantity],
+      ['buying price', form.purchasePrice],
+      ['low stock alert', form.minimumStock],
+    ]
+    const invalidField = numericFields.find(
+      ([, value]) => value === '' || !Number.isFinite(Number(value)) || Number(value) < 0,
+    )
+    if (invalidField) {
+      setError(`Please enter a valid ${invalidField[0]}.`)
+      return
+    }
     setError('')
     await onSave({
       ...initialItem,
       ...form,
       name: form.name.trim(),
-      currentQuantity: Number(form.currentQuantity) || 0,
-      purchasePrice: Number(form.purchasePrice) || 0,
-      minimumStock: Number(form.minimumStock) || 0,
+      currentQuantity: Number(form.currentQuantity),
+      purchasePrice: Number(form.purchasePrice),
+      minimumStock: Number(form.minimumStock),
     })
   }
 

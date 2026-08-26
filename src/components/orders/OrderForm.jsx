@@ -104,6 +104,10 @@ function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onCle
       setValidationError('Please select at least one available menu item.')
       return
     }
+    if (new Set(selectedItems.map((item) => item.menuItemId)).size !== selectedItems.length) {
+      setValidationError('Please select each menu item only once. Change its quantity instead of adding it again.')
+      return
+    }
     if (selectedItems.some((item) => !Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1)) {
       setValidationError('Please enter a quantity of 1 or more for every selected item.')
       return

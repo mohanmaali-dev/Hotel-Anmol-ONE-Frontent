@@ -37,8 +37,25 @@ function Stock() {
   const [notice, setNotice] = useState(location.state?.message ? { type: 'success', text: location.state.message } : null)
 
   useEffect(() => {
-    getAllStockItems().then(setCatalog).catch(() => {})
-    getAllSuppliers({ status: 'Active' }).then(setSuppliers).catch(() => {})
+    let active = true
+    Promise.allSettled([getAllStockItems(), getAllSuppliers({ status: 'Active' })])
+      .then(([catalogResult, supplierResult]) => {
+        if (!active) return
+        if (catalogResult.status === 'fulfilled') setCatalog(catalogResult.value)
+        if (supplierResult.status === 'fulfilled') setSuppliers(supplierResult.value)
+        const failures = [catalogResult, supplierResult].filter((result) => result.status === 'rejected')
+        if (failures.length) {
+          setNotice((current) => current || {
+            type: 'error',
+            text: failures.length === 2
+              ? 'Stock options could not be loaded. Please refresh and try again.'
+              : catalogResult.status === 'rejected'
+                ? 'Stock item options could not be loaded. Please refresh and try again.'
+                : 'Supplier options could not be loaded. Please refresh and try again.',
+          })
+        }
+      })
+    return () => { active = false }
   }, [])
 
   const loadStock = useCallback(async () => {

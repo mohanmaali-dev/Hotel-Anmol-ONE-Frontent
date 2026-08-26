@@ -39,6 +39,9 @@ function IngredientRow({ ingredient, stockItems, onChange, onRemove, canRemove }
           step="0.001"
           value={ingredient.quantityUsed}
           onChange={(event) => onChange('quantityUsed', event.target.value)}
+          onBlur={(event) => {
+            if (event.target.value === '') onChange('quantityUsed', 1)
+          }}
           className={inputClass}
         />
       </label>

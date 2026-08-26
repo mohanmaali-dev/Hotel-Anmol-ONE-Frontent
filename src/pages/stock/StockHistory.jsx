@@ -20,9 +20,16 @@ function StockHistory() {
   const [pagination, setPagination] = useState({ page: 1, limit: pageSize, total: 0, pages: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [itemLoadError, setItemLoadError] = useState('')
 
   useEffect(() => {
-    getAllStockItems().then(setItems).catch(() => {})
+    let active = true
+    getAllStockItems()
+      .then((result) => { if (active) setItems(result) })
+      .catch((requestError) => {
+        if (active) setItemLoadError(`Stock item filter could not be loaded. ${requestError.message}`)
+      })
+    return () => { active = false }
   }, [])
 
   const loadHistory = useCallback(async () => {
@@ -46,7 +53,7 @@ function StockHistory() {
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8"><div className="page-content">
       <div className="mb-6"><Link to="/stock" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-primary-dark"><FiArrowLeft /> Back to Stock</Link><div className="mt-3 flex items-center gap-3"><h2 className="text-2xl font-bold tracking-tight text-slate-900">Stock History</h2><span className="grid size-8 place-items-center rounded-lg bg-primary-light text-primary-dark"><FiClock /></span></div><p className="mt-1 text-sm text-slate-500">A complete record of inventory movements.</p></div>
-      {error && <div className="mb-5 flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"><span className="flex-1">{error}</span><button type="button" onClick={() => setError('')} aria-label="Close error message" className="grid size-6 place-items-center rounded-md hover:bg-rose-100"><FiX /></button></div>}
+      {(error || itemLoadError) && <div className="mb-5 flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"><span className="flex-1">{error || itemLoadError}</span><button type="button" onClick={() => { setError(''); setItemLoadError('') }} aria-label="Close error message" className="grid size-6 place-items-center rounded-md hover:bg-rose-100"><FiX /></button></div>}
       <MobileFilterPanel filters={filters} className="mb-5 p-4"><div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[1.3fr_1fr_1fr_1fr_auto]">
         <select aria-label="Stock item" value={filters.item} onChange={(event) => updateFilter('item', event.target.value)} className={inputClass}><option value="">All items</option>{items.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
         <select aria-label="Movement type" value={filters.type} onChange={(event) => updateFilter('type', event.target.value)} className={inputClass}><option value="">All movement types</option><option value="IN">Stock In</option><option value="OUT">Stock Out</option></select>

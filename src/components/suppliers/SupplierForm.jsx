@@ -25,12 +25,40 @@ function SupplierForm({ initialSupplier, onSave, submitting = false, apiError = 
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    if (!form.name.trim() || !form.contactPerson.trim() || !form.phone.trim() || !form.address.trim()) {
-      setError('Please enter the supplier name, contact person, phone, and address.')
+    const values = new FormData(event.currentTarget)
+    const submittedForm = {
+      ...form,
+      name: String(values.get('name') || '').trim(),
+      contactPerson: String(values.get('contactPerson') || '').trim(),
+      phone: String(values.get('phone') || '').replace(/\D/g, ''),
+      alternatePhone: String(values.get('alternatePhone') || '').replace(/\D/g, ''),
+      email: String(values.get('email') || '').trim(),
+      gstTaxNo: String(values.get('gstTaxNo') || '').trim(),
+      address: String(values.get('address') || '').trim(),
+      notes: String(values.get('notes') || '').trim(),
+    }
+    const missingFields = [
+      ['Supplier Name', submittedForm.name],
+      ['Contact Person', submittedForm.contactPerson],
+      ['Phone', submittedForm.phone],
+      ['Address', submittedForm.address],
+    ].filter(([, value]) => !value).map(([label]) => label)
+
+    if (missingFields.length) {
+      setError(`Please enter ${missingFields.join(', ')}.`)
+      return
+    }
+    if (submittedForm.phone.length < 7 || submittedForm.phone.length > 15) {
+      setError('Please enter a valid phone number with 7 to 15 digits.')
+      return
+    }
+    if (submittedForm.alternatePhone && (submittedForm.alternatePhone.length < 7 || submittedForm.alternatePhone.length > 15)) {
+      setError('Please enter a valid alternate phone number with 7 to 15 digits.')
       return
     }
     setError('')
-    await onSave({ ...initialSupplier, ...form, name: form.name.trim() })
+    setForm(submittedForm)
+    await onSave({ ...initialSupplier, ...submittedForm })
   }
 
   return (
@@ -50,35 +78,35 @@ function SupplierForm({ initialSupplier, onSave, submitting = false, apiError = 
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">Supplier Name</span>
-            <input type="text" value={form.name} onChange={(event) => updateForm('name', event.target.value)} placeholder="Enter supplier name" className={inputClass} />
+            <input type="text" name="name" autoComplete="organization" value={form.name} onChange={(event) => updateForm('name', event.target.value)} placeholder="Enter supplier name" className={inputClass} required />
           </label>
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">Contact Person</span>
-            <input type="text" value={form.contactPerson} onChange={(event) => updateForm('contactPerson', event.target.value)} placeholder="Enter contact person" className={inputClass} />
+            <input type="text" name="contactPerson" autoComplete="name" value={form.contactPerson} onChange={(event) => updateForm('contactPerson', event.target.value)} placeholder="Enter contact person" className={inputClass} required />
           </label>
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">Phone</span>
-            <input type="tel" inputMode="numeric" pattern="[0-9]{7,15}" maxLength="15" value={form.phone} onChange={(event) => updateForm('phone', event.target.value.replace(/\D/g, ''))} placeholder="Enter phone number" className={inputClass} />
+            <input type="tel" name="phone" autoComplete="tel" inputMode="numeric" pattern="[0-9]{7,15}" maxLength="15" value={form.phone} onChange={(event) => updateForm('phone', event.target.value.replace(/\D/g, ''))} placeholder="Enter phone number" className={inputClass} required />
           </label>
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">Alternate Phone <span className="font-normal text-slate-400">(optional)</span></span>
-            <input type="tel" inputMode="numeric" pattern="[0-9]{7,15}" maxLength="15" value={form.alternatePhone} onChange={(event) => updateForm('alternatePhone', event.target.value.replace(/\D/g, ''))} placeholder="Alternate phone" className={inputClass} />
+            <input type="tel" name="alternatePhone" inputMode="numeric" pattern="[0-9]{7,15}" maxLength="15" value={form.alternatePhone} onChange={(event) => updateForm('alternatePhone', event.target.value.replace(/\D/g, ''))} placeholder="Alternate phone" className={inputClass} />
           </label>
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">Email <span className="font-normal text-slate-400">(optional)</span></span>
-            <input type="email" value={form.email} onChange={(event) => updateForm('email', event.target.value)} placeholder="supplier@example.com" className={inputClass} />
+            <input type="email" name="email" autoComplete="email" value={form.email} onChange={(event) => updateForm('email', event.target.value)} placeholder="supplier@example.com" className={inputClass} />
           </label>
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">GST / Tax No. <span className="font-normal text-slate-400">(optional)</span></span>
-            <input type="text" value={form.gstTaxNo} onChange={(event) => updateForm('gstTaxNo', event.target.value)} placeholder="Enter GST or tax number" className={inputClass} />
+            <input type="text" name="gstTaxNo" value={form.gstTaxNo} onChange={(event) => updateForm('gstTaxNo', event.target.value)} placeholder="Enter GST or tax number" className={inputClass} />
           </label>
           <label className="sm:col-span-2 xl:col-span-3">
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">Address</span>
-            <textarea rows="3" value={form.address} onChange={(event) => updateForm('address', event.target.value)} placeholder="Enter complete address" className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+            <textarea name="address" autoComplete="street-address" rows="3" value={form.address} onChange={(event) => updateForm('address', event.target.value)} placeholder="Enter complete address" className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" required />
           </label>
           <label className="sm:col-span-2 xl:col-span-3">
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">Notes <span className="font-normal text-slate-400">(optional)</span></span>
-            <textarea rows="3" value={form.notes} onChange={(event) => updateForm('notes', event.target.value)} placeholder="Optional supplier notes" className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+            <textarea name="notes" rows="3" value={form.notes} onChange={(event) => updateForm('notes', event.target.value)} placeholder="Optional supplier notes" className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
           </label>
         </div>
 

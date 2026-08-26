@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { FiAlertCircle, FiPlus, FiSave, FiX } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 
+import DatePickerField from '../DatePickerField.jsx'
 import PurchaseItemRow from './PurchaseItemRow.jsx'
 import PurchasePayment from './PurchasePayment.jsx'
 import PurchaseSummary from './PurchaseSummary.jsx'
@@ -78,11 +79,11 @@ function PurchaseForm({ initialPurchase, preselectedSupplierId = '', suppliers, 
         }
 
         if (field === 'quantity') {
-          return { ...item, quantity: Math.max(0.001, Number(value) || 0.001) }
+          return { ...item, quantity: value }
         }
 
         if (field === 'purchasePrice') {
-          return { ...item, purchasePrice: Math.max(0, Number(value) || 0) }
+          return { ...item, purchasePrice: value }
         }
 
         return { ...item, [field]: value }
@@ -108,6 +109,14 @@ function PurchaseForm({ initialPurchase, preselectedSupplierId = '', suppliers, 
       setValidationError('Please select each purchase item only once.')
       return
     }
+    if (selectedItems.some((item) => !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0)) {
+      setValidationError('Please enter a quantity greater than zero for every purchase item.')
+      return
+    }
+    if (selectedItems.some((item) => item.purchasePrice === '' || !Number.isFinite(Number(item.purchasePrice)) || Number(item.purchasePrice) < 0)) {
+      setValidationError('Please enter a valid purchase price for every purchase item.')
+      return
+    }
 
     if (discount > subtotal + additionalCharges) {
       setValidationError('Discount cannot make the final amount negative.')
@@ -126,10 +135,10 @@ function PurchaseForm({ initialPurchase, preselectedSupplierId = '', suppliers, 
       items: selectedItems.map(({ itemId, name, quantity, unit, purchasePrice }) => ({
         itemId,
         name,
-        quantity,
+        quantity: Number(quantity),
         unit,
-        purchasePrice,
-        amount: quantity * purchasePrice,
+        purchasePrice: Number(purchasePrice),
+        amount: Number(quantity) * Number(purchasePrice),
       })),
     }
 
@@ -179,17 +188,17 @@ function PurchaseForm({ initialPurchase, preselectedSupplierId = '', suppliers, 
             </select>
           </label>
 
-          <label>
+          <div>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">
               Purchase Date <span className="text-rose-500">*</span>
             </span>
-            <input
-              type="date"
+            <DatePickerField
+              fullYear
+              ariaLabel="Purchase Date"
               value={form.purchaseDate}
-              onChange={(event) => updateForm('purchaseDate', event.target.value)}
-              className={inputClass}
+              onChange={(value) => updateForm('purchaseDate', value)}
             />
-          </label>
+          </div>
 
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">

@@ -52,7 +52,9 @@ function OrderDetails() {
         }
         findBillForOrder(result.data.orderNo)
           .then((bill) => { if (active) setExistingBill(bill) })
-          .catch(() => {})
+          .catch((requestError) => {
+            if (active) setError(`Billing information could not be checked. ${requestError.message}`)
+          })
           .finally(() => { if (active) setCheckingBill(false) })
       })
       .catch((requestError) => { if (active) { setError(requestError.message); setCheckingBill(false) } })

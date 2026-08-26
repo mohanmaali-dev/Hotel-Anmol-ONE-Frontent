@@ -1,14 +1,15 @@
 import { unitOptions } from './units.js'
 
-const allowedExtensions = ['xlsx', 'csv']
+const allowedExtensions = ['xlsx', 'xls', 'csv']
 const normalized = (value) => String(value ?? '').trim().toLowerCase()
 const stockUnits = new Set(unitOptions)
 const loadExcel = () => import('exceljs').then((module) => module.default || module)
+const loadLegacyExcel = () => import('xlsx').then((module) => module.default || module)
 
 export function validateImportFile(file) {
   if (!file) return 'Please choose an Excel or CSV file.'
   const extension = file.name.split('.').pop()?.toLowerCase()
-  if (!allowedExtensions.includes(extension)) return 'Choose a .xlsx or .csv file.'
+  if (!allowedExtensions.includes(extension)) return 'Choose a .xlsx, .xls, or .csv file.'
   if (file.size > 10 * 1024 * 1024) return 'The selected file is larger than 10 MB.'
   return ''
 }
@@ -56,6 +57,13 @@ export async function createFilePreview(file, type) {
   let grid
   if (extension === 'csv') {
     grid = parseCsv(await file.text())
+  } else if (extension === 'xls') {
+    const XLSX = await loadLegacyExcel()
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true })
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]]
+    grid = worksheet
+      ? XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false })
+      : []
   } else {
     const ExcelJS = await loadExcel()
     const workbook = new ExcelJS.Workbook()

@@ -28,6 +28,7 @@ function StockItems() {
       .then(([supplierResult, categoryResult, itemResult]) => {
         if (!active) return
         if (supplierResult.status === 'fulfilled') setSuppliers(supplierResult.value)
+        if (supplierResult.status === 'rejected') setError(`Suppliers could not be loaded. ${supplierResult.reason.message}`)
         if (categoryResult.status === 'fulfilled') setCategories(categoryResult.value.data)
         if (categoryResult.status === 'rejected') setError(categoryResult.reason.message)
         if (itemResult?.status === 'fulfilled') setInitialItem(itemResult.value.data)

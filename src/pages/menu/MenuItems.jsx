@@ -28,7 +28,15 @@ function MenuItems() {
   const [pendingDelete, setPendingDelete] = useState(null)
   const [notice, setNotice] = useState(location.state?.message ? { type: 'success', text: location.state.message } : null)
 
-  useEffect(() => { getAllMenuCategories().then(setCategories).catch(() => {}) }, [])
+  useEffect(() => {
+    let active = true
+    getAllMenuCategories()
+      .then((result) => { if (active) setCategories(result) })
+      .catch((requestError) => {
+        if (active) setNotice({ type: 'error', text: `Categories could not be loaded. ${requestError.message}` })
+      })
+    return () => { active = false }
+  }, [])
 
   const loadItems = useCallback(async () => {
     setLoading(true)
