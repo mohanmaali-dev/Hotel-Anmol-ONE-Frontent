@@ -11,20 +11,34 @@ const statusClasses = {
 
 function PaymentSection({ bill, onUpdate, updating, canEdit }) {
   const [paymentType, setPaymentType] = useState(bill.paymentType || 'Cash')
-  const [paidAmount, setPaidAmount] = useState(String(bill.paidAmount))
+  const [paidAmount, setPaidAmount] = useState(String(bill.paidAmount ?? 0))
   const [reason, setReason] = useState('')
 
   useEffect(() => {
     setPaymentType(bill.paymentType || 'Cash')
-    setPaidAmount(String(bill.paidAmount))
+    setPaidAmount(String(bill.paidAmount ?? 0))
     setReason('')
   }, [bill])
 
   const numericPaidAmount = Number(paidAmount)
-  const amountReduced = numericPaidAmount < Number(bill.paidAmount)
-  const hasChanges =
+  const amountValid =
     paidAmount !== '' &&
-    (numericPaidAmount !== Number(bill.paidAmount) || paymentType !== (bill.paymentType || 'Cash'))
+    Number.isFinite(numericPaidAmount) &&
+    numericPaidAmount >= 0 &&
+    numericPaidAmount <= Number(bill.finalAmount)
+  const amountReduced = amountValid && numericPaidAmount < Number(bill.paidAmount)
+  const amountError =
+    paidAmount === ''
+      ? 'Enter the paid amount.'
+      : !Number.isFinite(numericPaidAmount) || numericPaidAmount < 0
+        ? 'Enter a valid paid amount.'
+        : numericPaidAmount > Number(bill.finalAmount)
+          ? 'Paid amount cannot be more than the final amount.'
+          : ''
+  const hasChanges =
+    amountValid &&
+    (numericPaidAmount !== Number(bill.paidAmount) ||
+      (numericPaidAmount > 0 && paymentType !== (bill.paymentType || 'Cash')))
 
   const savePayment = async (amount = paidAmount) => {
     const numericAmount = Number(amount)
@@ -48,13 +62,14 @@ function PaymentSection({ bill, onUpdate, updating, canEdit }) {
 
       {canEdit ? (
         <div className="mt-5 space-y-5 print:hidden">
-          <fieldset disabled={updating}><legend className="mb-2 text-sm font-semibold text-slate-700">Payment Type</legend><div className="grid grid-cols-3 gap-2">{['Cash', 'UPI', 'Card'].map((type) => <button key={type} type="button" onClick={() => setPaymentType(type)} className={`h-10 rounded-lg border text-sm font-semibold ${paymentType === type ? 'border-primary bg-primary-light text-primary-dark' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{type}</button>)}</div></fieldset>
+          <fieldset disabled={updating || !amountValid || numericPaidAmount <= 0}><legend className="mb-2 text-sm font-semibold text-slate-700">Payment Type</legend><div className="grid grid-cols-3 gap-2">{['Cash', 'UPI', 'Card'].map((type) => <button key={type} type="button" onClick={() => setPaymentType(type)} className={`h-10 rounded-lg border text-sm font-semibold disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400 ${numericPaidAmount > 0 && paymentType === type ? 'border-primary bg-primary-light text-primary-dark' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{type}</button>)}</div>{numericPaidAmount <= 0 && <p className="mt-2 text-xs text-slate-500">Payment method can be selected after entering a paid amount.</p>}</fieldset>
           <label><span className="mb-1.5 block text-sm font-semibold text-slate-700">Paid Amount</span><span className="relative block"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{getCurrencySymbol()}</span><input type="number" min="0" max={bill.finalAmount} step="0.01" value={paidAmount} disabled={updating} onChange={(event) => setPaidAmount(event.target.value)} className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-8 pr-3 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:bg-slate-50" /></span></label>
+          {amountError && <p className="-mt-3 text-xs font-medium text-rose-600">{amountError}</p>}
           {amountReduced && <label><span className="mb-1.5 block text-sm font-semibold text-slate-700">Reason for reducing payment</span><input type="text" value={reason} disabled={updating} onChange={(event) => setReason(event.target.value)} placeholder="For example: entered by mistake" className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:bg-slate-50" /></label>}
           <div className="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 text-sm"><div><p className="text-xs text-slate-500">Current Paid</p><p className="mt-1 font-bold text-slate-800">{formatCurrency(bill.paidAmount)}</p></div><div><p className="text-xs text-slate-500">Current Due</p><p className="mt-1 font-bold text-rose-700">{formatCurrency(bill.dueAmount)}</p></div></div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
             <button type="button" onClick={() => savePayment(bill.finalAmount)} disabled={updating || bill.paymentStatus === 'Paid'} className="flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 px-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"><FiCheckCircle /> Mark as Paid</button>
-            <button type="button" onClick={() => savePayment()} disabled={updating || !hasChanges || (amountReduced && !reason.trim())} className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"><FiSave /> {updating ? 'Updating...' : 'Update Payment'}</button>
+            <button type="button" onClick={() => savePayment()} disabled={updating || !amountValid || !hasChanges || (amountReduced && !reason.trim())} className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"><FiSave /> {updating ? 'Updating...' : 'Update Payment'}</button>
           </div>
         </div>
       ) : <p className="mt-5 rounded-lg bg-slate-50 px-3 py-3 text-sm text-slate-500 print:hidden">You have view-only access to payments.</p>}

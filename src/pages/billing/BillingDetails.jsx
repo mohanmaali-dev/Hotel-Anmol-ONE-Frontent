@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { FiAlertCircle, FiArrowLeft, FiDownload, FiFileText, FiPrinter, FiTrendingUp, FiX } from 'react-icons/fi'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { FiAlertCircle, FiArrowLeft, FiDownload, FiFileText, FiPrinter, FiRefreshCw, FiTrendingUp, FiX } from 'react-icons/fi'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { getBillDetails, updateBillPayment } from '../../api/billingApi.js'
 import BillDetails from '../../components/billing/BillDetails.jsx'
@@ -16,9 +16,13 @@ import { downloadBillPdf } from '../../utils/billPdf.js'
 function BillingDetails() {
   const { id } = useParams()
   const location = useLocation()
+  const navigate = useNavigate()
   const { user, can } = useAuth()
+  const canViewOrders = can('orders', 'view')
   const { settings } = useSettings()
   const [bill, setBill] = useState(null)
+  const [loadVersion, setLoadVersion] = useState(0)
+  const [loadErrorStatus, setLoadErrorStatus] = useState(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
   const [downloading, setDownloading] = useState(false)
@@ -28,7 +32,10 @@ function BillingDetails() {
   useEffect(() => {
     let active = true
     setLoading(true)
-    getBillDetails(id)
+    setBill(null)
+    setError('')
+    setLoadErrorStatus(null)
+    getBillDetails(id, canViewOrders)
       .then((result) => {
         if (!active) return
         const value = result.data
@@ -38,10 +45,15 @@ function BillingDetails() {
             String(value.biller) === String(user?._id) ? user.name : value.billerName,
         })
       })
-      .catch((requestError) => { if (active) setError(requestError.message) })
+      .catch((requestError) => { if (active) { setError(requestError.message); setLoadErrorStatus(requestError.status || 0) } })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [id, user?._id, user?.name])
+  }, [canViewOrders, id, loadVersion, user?._id, user?.name])
+
+  useEffect(() => {
+    if (!location.state?.message) return
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state?.message, navigate])
 
   const handlePaymentUpdate = async (payment) => {
     if (updating) return
@@ -51,7 +63,7 @@ function BillingDetails() {
       const updateResult = await updateBillPayment(bill.id, payment)
       let value = { ...bill, ...updateResult.data }
       try {
-        const refreshed = await getBillDetails(bill.id)
+        const refreshed = await getBillDetails(bill.id, canViewOrders)
         value = refreshed.data
       } catch {
         // The payment response is authoritative if the follow-up refresh is unavailable.
@@ -61,7 +73,7 @@ function BillingDetails() {
         billerName:
           String(value.biller) === String(user?._id) ? user.name : value.billerName,
       })
-      setMessage(`${updateResult.message} Status: ${value.paymentStatus}.`)
+      setMessage(`Payment updated. Status: ${value.paymentStatus}.`)
     } catch (requestError) {
       setError(requestError.message)
     } finally {
@@ -85,7 +97,10 @@ function BillingDetails() {
 
   if (loading) return <main className="grid min-h-[calc(100vh-72px)] place-items-center"><div className="text-center"><span className="mx-auto block size-10 animate-spin rounded-full border-4 border-primary-light border-t-primary" /><p className="mt-3 text-sm text-slate-500">Loading bill...</p></div></main>
 
-  if (!bill) return <main className="grid min-h-[calc(100vh-72px)] place-items-center px-4 py-12"><div className="max-w-md text-center"><span className="mx-auto grid size-14 place-items-center rounded-full bg-slate-100 text-2xl text-slate-400"><FiFileText /></span><h2 className="mt-4 text-xl font-bold text-slate-900">Bill not found</h2><p className="mt-1 text-sm text-slate-500">{error || 'The requested bill does not exist.'}</p><Link to="/billing" className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark"><FiArrowLeft /> Back to Billing</Link></div></main>
+  if (!bill) {
+    const notFound = loadErrorStatus === 404
+    return <main className="grid min-h-[calc(100vh-72px)] place-items-center px-4 py-12"><div className="max-w-md text-center"><span className="mx-auto grid size-14 place-items-center rounded-full bg-slate-100 text-2xl text-slate-400"><FiFileText /></span><h2 className="mt-4 text-xl font-bold text-slate-900">{notFound ? 'Bill not found' : 'Bill could not be loaded'}</h2><p className="mt-1 text-sm text-slate-500">{error || 'The requested bill does not exist.'}</p><div className="mt-5 flex flex-wrap justify-center gap-2">{!notFound && <button type="button" onClick={() => setLoadVersion((current) => current + 1)} className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark"><FiRefreshCw /> Try Again</button>}<Link to="/billing" className={`inline-flex h-10 items-center gap-2 rounded-lg px-4 text-sm font-semibold ${notFound ? 'bg-primary text-white hover:bg-primary-dark' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}><FiArrowLeft /> Back to Billing</Link></div></div></main>
+  }
 
   const saleNo = bill.billNo.replace(/^[^-]+-/, 'SALE-')
 
@@ -98,7 +113,7 @@ function BillingDetails() {
         <div className="mb-6 flex flex-col justify-between gap-4 print:hidden sm:flex-row sm:items-end">
           <div><Link to="/billing" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-primary-dark"><FiArrowLeft /> Back to Billing</Link><h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">Bill Details</h2><p className="mt-1 text-sm text-slate-500">Review the bill and update payment details.</p></div>
           <div className="flex flex-wrap gap-2">
-            <Link to={`/orders/${bill.orderId}`} className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50"><FiArrowLeft /> View Order</Link>
+            {canViewOrders && <Link to={`/orders/${bill.orderId}`} className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50"><FiArrowLeft /> View Order</Link>}
             {can('sales', 'view') && <Link to={`/sales/${saleNo}`} className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50"><FiTrendingUp /> View Sale</Link>}
             <button type="button" onClick={() => window.print()} className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50"><FiPrinter /> Print Bill</button>
             <button type="button" disabled={downloading} onClick={handleDownload} className="flex h-10 items-center gap-2 rounded-lg bg-primary px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"><FiDownload /> {downloading ? 'Preparing PDF...' : 'Download PDF'}</button>

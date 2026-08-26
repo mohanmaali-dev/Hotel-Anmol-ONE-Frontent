@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FiArrowLeft } from 'react-icons/fi'
+import { FiAlertCircle, FiArrowLeft, FiRefreshCw } from 'react-icons/fi'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { getAvailableMenuItemsForOrder } from '../../api/menuApi.js'
@@ -12,22 +12,26 @@ function NewOrder() {
   const navigate = useNavigate()
   const [menuItems, setMenuItems] = useState([])
   const [loadingMenu, setLoadingMenu] = useState(true)
+  const [menuRequestKey, setMenuRequestKey] = useState(0)
+  const [menuError, setMenuError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
+  const [submitError, setSubmitError] = useState('')
 
   useEffect(() => {
     let active = true
+    setLoadingMenu(true)
+    setMenuError('')
     getAvailableMenuItemsForOrder()
       .then((items) => { if (active) setMenuItems(items) })
-      .catch((requestError) => { if (active) setError(requestError.message) })
+      .catch((requestError) => { if (active) setMenuError(requestError.message) })
       .finally(() => { if (active) setLoadingMenu(false) })
     return () => { active = false }
-  }, [])
+  }, [menuRequestKey])
 
   const handleSave = async (order) => {
     if (submitting) return
     setSubmitting(true)
-    setError('')
+    setSubmitError('')
     try {
       const result = await createOrder(order)
       navigate(`/orders/${result.data.id}`, {
@@ -35,7 +39,7 @@ function NewOrder() {
         state: { message: result.message || 'Order saved successfully.' },
       })
     } catch (requestError) {
-      setError(requestError.message)
+      setSubmitError(requestError.message)
     } finally {
       setSubmitting(false)
     }
@@ -54,8 +58,19 @@ function NewOrder() {
           <div className="grid min-h-72 place-items-center rounded-xl border border-slate-200 bg-white">
             <div className="text-center"><span className="mx-auto block size-9 animate-spin rounded-full border-4 border-primary-light border-t-primary" /><p className="mt-3 text-sm text-slate-500">Loading available menu items...</p></div>
           </div>
+        ) : menuError ? (
+          <div className="grid min-h-72 place-items-center rounded-xl border border-rose-200 bg-white px-5 text-center">
+            <div>
+              <span className="mx-auto grid size-11 place-items-center rounded-full bg-rose-50 text-xl text-rose-600"><FiAlertCircle /></span>
+              <h2 className="mt-3 font-bold text-slate-900">Menu items could not be loaded</h2>
+              <p className="mt-1 max-w-md text-sm text-slate-500">{menuError}</p>
+              <button type="button" onClick={() => setMenuRequestKey((current) => current + 1)} className="mx-auto mt-4 flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark">
+                <FiRefreshCw /> Try Again
+              </button>
+            </div>
+          </div>
         ) : (
-          <OrderForm onSave={handleSave} menuItems={menuItems} currentUser={user} submitting={submitting} apiError={error} onClearError={() => setError('')} />
+          <OrderForm onSave={handleSave} menuItems={menuItems} currentUser={user} submitting={submitting} apiError={submitError} onClearError={() => setSubmitError('')} />
         )}
       </div>
     </main>

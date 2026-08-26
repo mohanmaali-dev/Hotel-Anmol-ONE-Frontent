@@ -36,7 +36,7 @@ function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onCle
     discount: 0,
     additionalCharges: Number(settings.billing.defaultAdditionalCharge || 0),
     paymentType: 'Cash',
-    paymentStatus: 'Paid',
+    paymentStatus: 'Not Paid',
   }))
   const [items, setItems] = useState([createRow()])
   const [validationError, setValidationError] = useState('')
@@ -104,6 +104,10 @@ function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onCle
       setValidationError('Please select at least one available menu item.')
       return
     }
+    if (selectedItems.length !== items.length) {
+      setValidationError('Please select a menu item in each row, or remove the empty row.')
+      return
+    }
     if (new Set(selectedItems.map((item) => item.menuItemId)).size !== selectedItems.length) {
       setValidationError('Please select each menu item only once. Change its quantity instead of adding it again.')
       return
@@ -133,7 +137,7 @@ function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onCle
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} noValidate className="space-y-6">
       {error && (
         <div className="flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
           <FiAlertCircle className="mt-0.5 shrink-0" />
@@ -170,7 +174,7 @@ function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onCle
           </label>
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">Area / Room No. <span className="text-rose-500">*</span></span>
-            <input type="text" value={form.areaRoomNo} onChange={(event) => updateForm('areaRoomNo', event.target.value)} placeholder={form.orderType === 'Room' ? 'e.g. Room 104' : 'e.g. Table 08'} className={inputClass} required />
+            <input type="text" value={form.areaRoomNo} onChange={(event) => updateForm('areaRoomNo', event.target.value)} placeholder={form.orderType === 'Room' ? 'e.g. Room 104' : form.orderType === 'Parcel' ? 'e.g. Token 12' : 'e.g. Table 08'} className={inputClass} required />
           </label>
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">Customer Name <span className="text-rose-500">*</span></span>
@@ -213,8 +217,9 @@ function OrderForm({ onSave, menuItems, currentUser, submitting, apiError, onCle
             <fieldset>
               <legend className="mb-2 text-sm font-semibold text-slate-700">Payment Type</legend>
               <div className="flex flex-wrap gap-2">
-                {['Cash', 'UPI', 'Card'].map((type) => <button key={type} type="button" onClick={() => updateForm('paymentType', type)} className={`h-10 min-w-20 rounded-lg border px-3 text-sm font-semibold ${form.paymentType === type ? 'border-primary bg-primary-light text-primary-dark' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{type}</button>)}
+                {['Cash', 'UPI', 'Card'].map((type) => <button key={type} type="button" disabled={form.paymentStatus === 'Not Paid'} onClick={() => updateForm('paymentType', type)} className={`h-10 min-w-20 rounded-lg border px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400 ${form.paymentStatus === 'Paid' && form.paymentType === type ? 'border-primary bg-primary-light text-primary-dark' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{type}</button>)}
               </div>
+              {form.paymentStatus === 'Not Paid' && <p className="mt-2 text-xs text-slate-500">Payment method can be selected when payment is received.</p>}
             </fieldset>
             <fieldset>
               <legend className="mb-2 text-sm font-semibold text-slate-700">Payment Status</legend>

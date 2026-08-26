@@ -1,13 +1,13 @@
 import { FiAlertTriangle, FiArrowRight } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 
-function LowStock({ items, loading }) {
+function LowStock({ items, loading, className = '' }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40">
+    <section className={`overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40 ${className}`}>
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-5">
         <div>
-          <h2 className="font-bold text-slate-900">Low Stock</h2>
-          <p className="mt-0.5 text-xs text-slate-500">Items that need restocking</p>
+          <h2 className="font-bold text-slate-900">Stock Alerts</h2>
+          <p className="mt-0.5 text-xs text-slate-500">Low and out-of-stock items</p>
         </div>
         <span className="grid size-9 place-items-center rounded-lg bg-rose-50 text-rose-600">
           <FiAlertTriangle />
@@ -46,7 +46,7 @@ function LowStock({ items, loading }) {
               </tr>
             ))}
             {loading && <tr><td colSpan="4" className="px-5 py-12 text-center text-sm text-slate-500">Loading stock...</td></tr>}
-            {!loading && !items.length && <tr><td colSpan="4" className="px-5 py-12 text-center text-sm text-slate-500">No low-stock items.</td></tr>}
+            {!loading && !items.length && <tr><td colSpan="4" className="px-5 py-12 text-center text-sm text-slate-500">Stock levels are healthy.</td></tr>}
           </tbody>
         </table>
       </div>

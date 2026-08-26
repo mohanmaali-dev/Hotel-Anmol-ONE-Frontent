@@ -14,7 +14,7 @@ function PaymentHistoryCard({ history = [] }) {
       <div className="mt-4 space-y-3">
         {history.slice(0, 5).map((entry) => (
           <div key={entry._id || entry.id} className="rounded-lg bg-slate-50 px-3 py-2.5 text-sm">
-            <div className="flex items-center justify-between gap-3"><span className="font-semibold text-slate-800">{formatCurrency(entry.previousPaidAmount)} → {formatCurrency(entry.paidAmount)}</span><span className="text-xs text-slate-400">{formatOrderDate(entry.createdAt)}</span></div>
+            <div className="flex items-center justify-between gap-3"><span className="font-semibold text-slate-800">{formatCurrency(entry.previousPaidAmount)} → {formatCurrency(entry.paidAmount)}</span><span className="text-xs text-slate-400">{formatOrderDate(entry.createdAt, true)}</span></div>
             <p className="mt-1 text-xs text-slate-500">{entry.reason || 'Payment updated'}{entry.changedBy?.name ? ` · ${entry.changedBy.name}` : ''}</p>
           </div>
         ))}

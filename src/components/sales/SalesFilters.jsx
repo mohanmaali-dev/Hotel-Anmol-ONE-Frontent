@@ -22,9 +22,9 @@ function SalesFilters({ filters, onChange, onClear }) {
           />
         </label>
 
-        <DatePickerField label="From" value={filters.fromDate} onChange={(value) => onChange('fromDate', value)} />
+        <DatePickerField label="From" value={filters.fromDate} max={filters.toDate || undefined} onChange={(value) => onChange('fromDate', value)} />
 
-        <DatePickerField label="To" value={filters.toDate} onChange={(value) => onChange('toDate', value)} />
+        <DatePickerField label="To" value={filters.toDate} min={filters.fromDate || undefined} onChange={(value) => onChange('toDate', value)} />
 
         <label>
           <span className="sr-only">Order type</span>

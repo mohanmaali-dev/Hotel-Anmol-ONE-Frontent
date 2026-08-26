@@ -16,20 +16,22 @@ const purchaseClasses = {
   Cancelled: 'bg-rose-50 text-rose-700',
 }
 
-function PurchaseTable({ purchases, total, loading }) {
+function PurchaseTable({ purchases, total, loading, hasFilters, canCreate, canViewSuppliers }) {
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40">
       <div className="border-b border-slate-100 px-5 py-4">
         <h2 className="font-bold text-slate-900">All Purchases</h2>
         <p className="mt-0.5 text-xs text-slate-500">
-          {total} {total === 1 ? 'purchase' : 'purchases'} found
+          {loading && purchases.length
+            ? 'Updating purchases...'
+            : `${total} ${total === 1 ? 'purchase' : 'purchases'} found`}
         </p>
       </div>
 
-      {loading ? (
+      {loading && !purchases.length ? (
         <div className="grid place-items-center px-6 py-16"><span className="size-9 animate-spin rounded-full border-4 border-primary-light border-t-primary" /><p className="mt-3 text-sm text-slate-500">Loading purchases...</p></div>
       ) : purchases.length ? (
-        <div className="overflow-x-auto">
+        <div className={`overflow-x-auto transition-opacity ${loading ? 'pointer-events-none opacity-60' : ''}`} aria-busy={loading}>
           <table className="w-full min-w-[1180px] text-left">
             <thead>
               <tr className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -57,7 +59,7 @@ function PurchaseTable({ purchases, total, loading }) {
                     {formatOrderDate(purchase.purchaseDate)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-4 font-medium text-slate-700">
-                    {purchase.supplierName || 'Unknown Supplier'}
+                    {purchase.supplierId && canViewSuppliers ? <Link to={`/suppliers/${purchase.supplierId}`} className="record-link" title="View supplier details">{purchase.supplierName || '—'}</Link> : purchase.supplierName || '—'}
                   </td>
                   <td className="px-4 py-4 text-center font-semibold text-slate-700">
                     {purchase.totalItems}
@@ -102,7 +104,13 @@ function PurchaseTable({ purchases, total, loading }) {
             <FiPackage />
           </span>
           <p className="mt-3 font-semibold text-slate-700">No purchases found</p>
-          <p className="mt-1 text-sm text-slate-500">Try changing or clearing the filters.</p>
+          <p className="mt-1 text-sm text-slate-500">
+            {hasFilters
+              ? 'Try changing or clearing the filters.'
+              : canCreate
+                ? 'Create your first purchase using the New Purchase button.'
+                : 'Purchases will appear here when they are created.'}
+          </p>
         </div>
       )}
     </section>

@@ -16,6 +16,7 @@ function NotificationBell() {
   const { can } = useAuth()
   const { settings } = useSettings()
   const canViewSales = can('sales', 'view')
+  const canViewBilling = can('billing', 'view')
   const canViewStock = can('stock', 'view')
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -70,9 +71,9 @@ function NotificationBell() {
     const items = []
     if (canViewStock && alerts.outOfStockItems > 0) items.push({ id: 'out-stock', title: `${alerts.outOfStockItems} item${alerts.outOfStockItems === 1 ? '' : 's'} out of stock`, detail: 'Restock these items as soon as possible.', icon: FiPackage, color: 'bg-rose-50 text-rose-600', path: '/stock' })
     if (canViewStock && settings.stock.lowStockAlertEnabled && alerts.lowStockItems > 0) items.push({ id: 'low-stock', title: `${alerts.lowStockItems} item${alerts.lowStockItems === 1 ? '' : 's'} running low`, detail: 'Check stock before it runs out.', icon: FiAlertTriangle, color: 'bg-amber-50 text-amber-600', path: '/stock' })
-    if (canViewSales && alerts.dueAmount > 0) items.push({ id: 'due-payment', title: `${formatCurrency(alerts.dueAmount, settings.restaurant.currency)} payment due`, detail: 'Open Billing to review unpaid bills.', icon: FiCreditCard, color: 'bg-blue-50 text-blue-600', path: '/billing' })
+    if (canViewSales && canViewBilling && alerts.dueAmount > 0) items.push({ id: 'due-payment', title: `${formatCurrency(alerts.dueAmount, settings.restaurant.currency)} payment due`, detail: 'Open Billing to review unpaid bills.', icon: FiCreditCard, color: 'bg-blue-50 text-blue-600', path: '/billing' })
     return items
-  }, [alerts, canViewSales, canViewStock, settings.restaurant.currency, settings.stock.lowStockAlertEnabled])
+  }, [alerts, canViewBilling, canViewSales, canViewStock, settings.restaurant.currency, settings.stock.lowStockAlertEnabled])
 
   const openNotification = (path) => {
     setOpen(false)

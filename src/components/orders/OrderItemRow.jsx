@@ -14,7 +14,6 @@ function OrderItemRow({ item, menuItems, onChange, onRemove, canRemove }) {
           value={item.menuItemId}
           onChange={(event) => onChange('menuItemId', event.target.value)}
           className={inputClass}
-          required
         >
           <option value="">Select menu item</option>
           {menuItems.map((menuItem) => (
@@ -29,6 +28,7 @@ function OrderItemRow({ item, menuItems, onChange, onRemove, canRemove }) {
         <span className="mb-1.5 block text-xs font-semibold text-slate-600 md:sr-only">Quantity</span>
         <input
           type="number"
+          inputMode="numeric"
           min="1"
           step="1"
           value={item.quantity}
@@ -37,7 +37,6 @@ function OrderItemRow({ item, menuItems, onChange, onRemove, canRemove }) {
             if (event.target.value === '') onChange('quantity', 1)
           }}
           className={inputClass}
-          required
         />
       </label>
 

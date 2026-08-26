@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { FiCalendar } from 'react-icons/fi'
 
-function DatePickerField({ label, value, onChange, className = '', fullYear = false, ariaLabel }) {
+function DatePickerField({ label, value, onChange, className = '', fullYear = false, ariaLabel, min, max }) {
   const inputRef = useRef(null)
   const formattedDate = value
     ? new Intl.DateTimeFormat('en-GB', {
@@ -24,7 +24,7 @@ function DatePickerField({ label, value, onChange, className = '', fullYear = fa
         <span className={`flex min-w-0 flex-1 items-center px-2.5 text-sm ${value ? 'text-slate-700' : 'text-slate-400'}`}>{formattedDate}</span>
         <FiCalendar className="mr-2.5 shrink-0 self-center text-slate-400" />
       </button>
-      <input ref={inputRef} type="date" value={value} onChange={(event) => onChange(event.target.value)} aria-label={ariaLabel || `${label || 'Select'} date`} tabIndex="-1" className="pointer-events-none absolute inset-0 h-full w-full opacity-0" />
+      <input ref={inputRef} type="date" min={min} max={max} value={value} onChange={(event) => onChange(event.target.value)} aria-label={ariaLabel || `${label || 'Select'} date`} tabIndex="-1" className="pointer-events-none absolute inset-0 h-full w-full opacity-0" />
     </div>
   )
 }

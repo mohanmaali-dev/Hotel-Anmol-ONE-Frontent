@@ -9,9 +9,9 @@ const orderTypeClasses = {
   Room: 'bg-violet-50 text-violet-700',
 }
 
-function RecentOrders({ orders, loading }) {
+function RecentOrders({ orders, loading, fullWidth = false }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40 xl:col-span-2">
+    <section className={`overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40 ${fullWidth ? 'xl:col-span-3' : 'xl:col-span-2'}`}>
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-5">
         <div>
           <h2 className="font-bold text-slate-900">Recent Orders</h2>
@@ -56,7 +56,7 @@ function RecentOrders({ orders, loading }) {
                 <td className="whitespace-nowrap px-4 py-4 font-semibold text-slate-800">
                   {formatCurrency(order.finalAmount)}
                 </td>
-                <td className="whitespace-nowrap px-4 py-4">{order.paymentType}</td>
+                <td className="whitespace-nowrap px-4 py-4">{order.paymentType || '—'}</td>
                 <td className="whitespace-nowrap px-5 py-4">
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
